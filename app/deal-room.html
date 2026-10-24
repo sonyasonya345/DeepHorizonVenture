@@ -1,0 +1,1175 @@
+<title>Deal Room 项目库</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: two-pane deal room — pipeline ledger on the left, the project file on the right; stacks on phones */
+:root{
+  --bg:#F2F4F3; --surface:#FFFFFF; --sunk:#E9EDEB; --ink:#14201C; --muted:#5A6762; --line:#D9E0DC;
+  --accent:#1F5E4F; --accent-ink:#FFFFFF; --accent-soft:#E1EDE8;
+  --good:#2E7D4F; --warn:#A86B12; --bad:#B0412B; --info:#2C5A97;
+  --good-soft:#E3F1E8; --warn-soft:#F7EDDB; --bad-soft:#F6E3DE; --info-soft:#E2EAF5;
+  --f-display:"Noto Serif SC","Songti SC",Georgia,serif;
+  --f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1412; --surface:#151D1A; --sunk:#111816; --ink:#E4EBE8; --muted:#94A39D; --line:#26312D;
+  --accent:#72C2A8; --accent-ink:#0E1412; --accent-soft:#1B2E28;
+  --good:#6CC08E; --warn:#E0A84E; --bad:#E58B76; --info:#86AEE6;
+  --good-soft:#18291F; --warn-soft:#2D2416; --bad-soft:#2E1B17; --info-soft:#18233A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1412; --surface:#151D1A; --sunk:#111816; --ink:#E4EBE8; --muted:#94A39D; --line:#26312D;
+  --accent:#72C2A8; --accent-ink:#0E1412; --accent-soft:#1B2E28;
+  --good:#6CC08E; --warn:#E0A84E; --bad:#E58B76; --info:#86AEE6;
+  --good-soft:#18291F; --warn-soft:#2D2416; --bad-soft:#2E1B17; --info-soft:#18233A; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.6}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+.app{display:grid;grid-template-columns:340px minmax(0,1fr);height:100%;min-height:0}
+/* ---------- left: pipeline ---------- */
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:var(--surface)}
+.side-head{padding-block:18px 12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.brand h1{font-family:var(--f-display);font-size:20px;margin:0;letter-spacing:.02em}
+.brand small{color:var(--muted);font-size:12px}
+.search{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chipbtn{border:1px solid var(--line);background:transparent;border-radius:999px;padding:2px 10px;font-size:12px;color:var(--muted)}
+.chipbtn[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.list{overflow:auto;flex:1;min-height:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:12px 16px 12px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line);cursor:pointer;background:none;border-left:3px solid transparent;width:100%;text-align:left}
+.row:hover{background:var(--sunk)}
+.row.on{background:var(--accent-soft);border-left-color:var(--accent)}
+.row .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .ol{grid-column:1/-1;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .meta{grid-column:1/-1;display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.score{font-family:var(--f-mono);font-weight:500;font-size:13px}
+.side-foot{padding:12px 16px;border-top:1px solid var(--line)}
+
+/* ---------- pills ---------- */
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:0 8px;font-size:11.5px;line-height:20px;white-space:nowrap}
+.st-new{background:var(--info-soft);color:var(--info)}
+.st-tracking{background:var(--sunk);color:var(--muted)}
+.st-dd{background:var(--warn-soft);color:var(--warn)}
+.st-ic{background:var(--accent-soft);color:var(--accent)}
+.st-invested{background:var(--good-soft);color:var(--good)}
+.st-pass{background:var(--bad-soft);color:var(--bad)}
+.tag{background:var(--sunk);color:var(--muted)}
+
+/* ---------- buttons ---------- */
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:6px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:500}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.danger{color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.full{width:100%;justify-content:center}
+
+/* ---------- right: deal ---------- */
+.main{overflow:auto;min-height:0;min-width:0}
+.wrap{max-width:980px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+.back{display:none}
+.dh{display:flex;flex-direction:column;gap:8px}
+.dh-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.dh h2{font-family:var(--f-display);font-size:28px;line-height:1.25;margin:0;text-wrap:balance}
+.dh .ol{color:var(--muted);font-size:15px;max-width:62ch}
+.dh .tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.dh .stamp{font-size:12px;color:var(--muted)}
+select.status{border:1px solid var(--line);border-radius:999px;padding:2px 8px;background:var(--surface);font-size:12.5px}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.terms div{padding:10px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 -1px -1px 0;min-width:0}
+.terms dt{font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+.terms dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.terms dd.empty{color:var(--muted);font-weight:400}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:0;background:var(--bg);z-index:2}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:10px 12px;color:var(--muted);white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:500}
+.tab .n{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-left:4px}
+
+/* memo */
+.memo-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.memo-src{font-size:12.5px;color:var(--muted)}
+.legend{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+.scorecard{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.big{font-family:var(--f-mono);font-size:36px;line-height:1;font-weight:500}
+.big small{font-size:14px;color:var(--muted)}
+.rec{margin-top:6px}
+.dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 20px}
+.dim{display:grid;grid-template-columns:92px minmax(0,1fr) 28px;gap:8px;align-items:center;font-size:12.5px}
+.dim .w{color:var(--muted);font-size:11px}
+.bar{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.sec{border-top:1px solid var(--line);padding-top:14px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:8px 24px}
+.sec h3{margin:0;font-size:15px;font-family:var(--f-display);line-height:1.4}
+.sec h3 .en{display:block;font-family:var(--f-body);font-weight:400;font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+.sec h3 .no{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-weight:400;margin-right:4px}
+.sec .body{min-width:0;max-width:68ch}
+.sec .body p{margin:0 0 8px}
+.sec .body ul{margin:0 0 8px;padding-left:18px}
+.sec .body h4{margin:10px 0 4px;font-size:13.5px}
+.sec .hint{color:var(--muted);font-size:13px;font-style:italic}
+.sec .tools{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);margin-top:4px;flex-wrap:wrap}
+.sec textarea{width:100%;min-height:180px;padding:10px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);line-height:1.6}
+.src{display:inline-block;font-size:11px;line-height:17px;padding:0 6px;border-radius:4px;margin:0 2px;vertical-align:1px;font-weight:500}
+.src-bp{background:var(--info-soft);color:var(--info)}
+.src-ok{background:var(--good-soft);color:var(--good)}
+.src-inf{background:var(--warn-soft);color:var(--warn)}
+.src-q{background:var(--bad-soft);color:var(--bad)}
+
+/* files */
+.drop{border:1.5px dashed var(--line);border-radius:var(--r);padding:24px;text-align:center;color:var(--muted);background:var(--surface);display:flex;flex-direction:column;gap:8px;align-items:center}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop strong{color:var(--ink)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:12px;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td .fn{font-weight:500;overflow-wrap:anywhere}
+.ftype{font-family:var(--f-mono);font-size:11px;padding:1px 5px;border-radius:4px;background:var(--sunk);color:var(--muted);text-transform:uppercase}
+.progress{font-size:12.5px;color:var(--muted)}
+
+/* chat */
+.chat{display:flex;flex-direction:column;gap:12px}
+.msgs{display:flex;flex-direction:column;gap:12px}
+.msg{max-width:min(720px,100%);padding:10px 14px;border-radius:var(--r);line-height:1.65}
+.msg p{margin:0 0 6px}.msg p:last-child{margin:0}
+.msg ul{margin:0 0 6px;padding-left:18px}
+.msg.u{align-self:flex-end;background:var(--accent);color:var(--accent-ink)}
+.msg.a{align-self:flex-start;background:var(--surface);border:1px solid var(--line)}
+.msg .act{margin-top:6px;display:flex;gap:6px}
+.ask{display:flex;gap:8px;align-items:flex-end}
+.ask textarea{flex:1;min-width:0;resize:vertical;min-height:44px;max-height:200px;padding:10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.sugs{display:flex;gap:6px;flex-wrap:wrap}
+
+/* comments + history */
+.feed{display:flex;flex-direction:column;gap:0}
+.item{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.item img{width:28px;height:28px;border-radius:50%}
+.item .who{font-weight:500;font-size:13px}
+.item .when{color:var(--muted);font-size:12px;margin-left:6px}
+.item .txt{white-space:pre-wrap;overflow-wrap:anywhere}
+.item .txt p{margin:0 0 4px;white-space:normal}
+.agent-av{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:12px;font-weight:700}
+.compose{display:flex;flex-direction:column;gap:8px}
+.compose textarea{min-height:80px;padding:10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.hist{display:grid;grid-template-columns:118px minmax(0,1fr);gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.hist .t{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.hist b{font-weight:500}
+
+/* empty */
+.empty{max-width:620px;margin:8vh auto 0;display:flex;flex-direction:column;gap:16px}
+.empty h2{font-family:var(--f-display);font-size:26px;margin:0}
+.steps{display:grid;gap:10px;counter-reset:s}
+.steps li{list-style:none;display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--f-mono);width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:12px}
+.steps{padding:0;margin:0}
+.note{font-size:12.5px;color:var(--muted)}
+.notice{padding:10px 14px;border-radius:var(--r);background:var(--warn-soft);color:var(--warn);font-size:13px}
+
+/* intake composer */
+.intake{max-width:720px;margin:6vh auto 0;display:flex;flex-direction:column;gap:18px;width:100%}
+.ihead h2{font-family:var(--f-display);font-size:26px;margin:0 0 6px}
+.ihead p{margin:0;color:var(--muted);max-width:62ch}
+.composer{border:1px solid var(--line);border-radius:12px;background:var(--surface);display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px -16px rgba(0,0,0,.18)}
+.composer.over{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.composer.busy{opacity:.7}
+.composer textarea{border:0;background:transparent;resize:vertical;min-height:120px;padding:14px 16px;line-height:1.6;outline:none}
+.composer .chips{display:flex;flex-wrap:wrap;gap:6px;padding:12px 12px 0}
+.fchip{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:4px 6px 4px 8px;font-size:12.5px;min-width:0}
+.fchip .fcn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+.fchip .x{border:0;background:none;color:var(--muted);font-size:15px;line-height:1;padding:0 4px}
+.cbar{display:flex;align-items:center;gap:10px;padding:8px 10px 10px;border-top:1px solid var(--line);flex-wrap:wrap}
+.cbar .grow{flex:1}
+.prog{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.prog li{display:grid;grid-template-columns:16px 1fr;gap:10px;align-items:baseline;color:var(--muted);font-size:13.5px}
+.prog .dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--line);transform:translateY(1px)}
+.prog li.on{color:var(--ink)}.prog li.on .dot{border-color:var(--accent);animation:pulse 1.2s ease-in-out infinite}
+.prog li.done{color:var(--ink)}.prog li.done .dot{background:var(--good);border-color:var(--good)}
+.prog li.fail .dot{background:var(--bad);border-color:var(--bad)}
+.prog li.skip .dot{background:var(--sunk)}
+@keyframes pulse{50%{background:var(--accent-soft)}}
+.ihelp{display:flex;flex-direction:column;gap:8px;align-items:flex-start;border-top:1px solid var(--line);padding-top:14px}
+.ihelp p{margin:0}
+
+/* glossary terms + tooltip */
+.term{border-bottom:1px dotted var(--accent);cursor:help;border-radius:2px}
+.term:hover,.term:focus-visible{background:var(--accent-soft)}
+.msg.u .term{border-bottom-color:currentColor}
+.tip{position:fixed;z-index:40;max-width:min(340px,calc(100vw - 16px));background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:0 10px 30px -12px rgba(0,0,0,.35);font-size:13px;line-height:1.55;pointer-events:none}
+.tip .tz{font-weight:700;font-size:14px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;margin-bottom:6px}
+.tip .te{font-weight:400;color:var(--muted);font-size:12.5px}
+.tip p{margin:0 0 6px}
+.tip .ten{color:var(--muted)}
+.tip .tm{font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:6px;margin-top:2px}
+.side-foot{display:flex;flex-direction:column;gap:6px}
+
+/* mode switch + research */
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:var(--r);padding:2px;background:var(--bg);gap:2px}
+.seg button{border:0;background:transparent;border-radius:6px;padding:6px 8px;font-size:12.5px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.linkbtn{border:0;background:none;padding:0;color:var(--accent);font-size:12.5px;text-decoration:underline;text-underline-offset:2px}
+.secgrp{display:flex;flex-direction:column;gap:12px;padding-top:6px}
+.sgh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:8px}
+.sgh h3{margin:0;font-family:var(--f-display);font-size:18px}
+.sgh .btn{margin-left:auto}
+.insight{background:var(--accent-soft);border-radius:var(--r);padding:12px 16px;max-width:76ch}
+.insight h3,.insight h4{margin:10px 0 4px;font-size:13.5px}
+.insight ul{margin:0 0 6px;padding-left:18px}.insight p{margin:0 0 6px}
+.pains{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.pain{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ph{display:flex;gap:10px;align-items:flex-start}
+.ph h4{margin:0;font-size:14.5px;line-height:1.45;flex:1;min-width:0}
+.pr{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px;font-size:13px}
+.pr .lb{color:var(--muted);font-size:12px}
+.pr.opp span:last-child{color:var(--good);font-weight:500}
+.pain blockquote{margin:2px 0;padding:6px 10px;border-left:3px solid var(--line);color:var(--muted);font-size:13px}
+.pain blockquote cite{display:block;font-style:normal;font-size:12px;margin-top:2px}
+.psrc{border-top:1px solid var(--line);padding-top:6px;margin-top:2px}
+.sev{display:inline-flex;gap:2px;flex:none;margin-top:5px}.sev i{width:6px;height:10px;border-radius:2px;background:var(--sunk)}.sev i.on{background:var(--warn)}
+.x{border:0;background:none;color:var(--muted);font-size:15px;line-height:1;padding:0 4px;cursor:pointer}
+.memo-body{max-width:68ch}.memo-body ul{padding-left:18px}
+
+/* dialog */
+.scrim{position:fixed;inset:0;background:rgba(10,16,14,.45);display:grid;place-items:center;z-index:20;padding:16px}
+.dlg{background:var(--surface);border-radius:12px;width:min(640px,100%);max-height:90vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--line)}
+.dlg h3{margin:0;font-family:var(--f-display);font-size:18px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.fgrid .wide{grid-column:1/-1}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);min-width:0}
+.fld input,.fld select,.fld textarea{padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font-size:14px;width:100%}
+.fld textarea{min-height:60px}
+.dlg .acts{display:flex;justify-content:flex-end;gap:8px}
+.groupt{grid-column:1/-1;font-weight:500;color:var(--ink);font-size:13px;margin-top:6px;border-top:1px solid var(--line);padding-top:10px}
+.toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:8px 14px;border-radius:var(--r);font-size:13px;z-index:30}
+
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  .app.detail .side{display:none}
+  .app:not(.detail) .main{display:none}
+  .back{display:inline-flex}
+  .sec{grid-template-columns:1fr}
+  .scorecard{grid-template-columns:1fr}
+  .fgrid{grid-template-columns:1fr}
+  .hist{grid-template-columns:1fr;gap:2px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="app" id="app">
+  <aside class="side">
+    <div class="side-head">
+      <div class="brand"><h1>Deal Room</h1><small id="count">项目库</small></div>
+      <div class="seg" role="group" aria-label="切换视图"><button data-mode="deals" aria-pressed="true">项目 Pipeline</button><button data-mode="events" aria-pressed="false">会议与行业投研</button></div>
+      <input id="q" class="search" type="search" placeholder="搜索公司、赛道、创始人…" aria-label="搜索项目">
+      <div class="filters" id="filters"></div>
+    </div>
+    <div class="list" id="list"></div>
+    <div class="side-foot"><button class="btn pri full" id="newDeal">＋ 新建项目</button><button class="btn ghost full" id="openGloss">术语表 Glossary <span class="mono" id="gCount"></span></button></div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<input type="file" id="fileInput" multiple hidden accept=".pdf,.pptx,.docx,.xlsx,.txt,.md,.csv,.json,.png,.jpg,.jpeg,.webp,.gif">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script>
+"use strict";
+/* ================= Framework ================= */
+const SECTIONS = [
+  {k:"tldr",t:"投资要点",en:"Executive Summary",h:"一句话定位；建议 Pass / Track / Deep Dive；最看好的 1 点、最担心的 1 点"},
+  {k:"what",t:"业务概述",en:"Business Overview",h:"用大白话讲清：给谁解决什么痛点；现在大家怎么凑合；它的方案好在哪；怎么收钱；一个类比"},
+  {k:"whynow",t:"投资时机",en:"Why Now",h:"什么技术、法规或市场变化让这件事现在才做得成"},
+  {k:"team",t:"创始团队",en:"Founding Team & Founder–Market Fit",h:"每位创始人履历（交叉验证）；为什么是他们；互补性；是否全职；创始人股权分配与控制权；连续创业 / 退出经历"},
+  {k:"product",t:"产品与技术壁垒",en:"Product & Defensibility",h:"产品阶段（idea / demo / MVP / 上线）；技术、数据、网络效应、监管壁垒是真是假"},
+  {k:"traction",t:"业务进展",en:"Traction",h:"收入、用户、增长、留存、付费试点 (paid pilot)、意向书 (LOI)；区分「付钱」和「感兴趣」"},
+  {k:"market",t:"市场空间",en:"Market Sizing · TAM / SAM / SOM",h:"自下而上 (bottom-up) 重算，不照搬 BP"},
+  {k:"competition",t:"竞争格局",en:"Competitive Landscape",h:"直接竞品、大厂下场风险、差异化；竞品融资情况"},
+  {k:"model",t:"商业模式与单位经济",en:"Business Model & Unit Economics",h:"定价、毛利、获客成本 (CAC)、客户生命周期价值 (LTV)；没数据就写关键假设"},
+  {k:"round",t:"本轮交易条款",en:"Round Terms",h:"融资额、投前 / 投后估值、出让比例、工具（SAFE / priced round / 可转债）、估值上限 (cap)、资金用途、跑道 (runway)、领投方、我们能拿的额度"},
+  {k:"investors",t:"股东结构与外部背书",en:"Investors & Validation",h:"历轮融资与投资人质量；政府补助（SBIR / NIH 等）、大厂合作"},
+  {k:"geo",t:"地缘政治与合规风险",en:"Geopolitical & Regulatory Risk",h:"美国对华投资限制 (Outbound Investment Rules)、外国投资审查 (CFIUS)、出口管制 (EAR / 实体清单)、数据跨境与安全审查、公司架构 (Cayman / VIE / 美国主体)、团队与资金的中美敞口"},
+  {k:"risks",t:"核心风险与关键假设",en:"Key Risks & Critical Assumptions",h:"3–5 个「不成立项目就死」的假设；红旗信号"},
+  {k:"next",t:"尽调清单与基金匹配度",en:"Diligence Questions & Fund Fit",h:"下次见创始人的 10 个问题；与我们 thesis 的契合；退出路径；GP 能提供的增值"}
+];
+const DIMS = [["team","团队",.30],["market","市场",.20],["product","产品与壁垒",.15],["traction","牵引力",.15],["terms","条款与估值",.10],["fit","基金契合度",.10]];
+const STATUS = {new:"初筛",tracking:"持续跟踪",dd:"尽职调查",ic:"投委会",invested:"已投资",pass:"放弃"};
+const RECS = {"Deep Dive":"st-ic","Track":"st-tracking","Pass":"st-pass"};
+const STAGES = ["Pre-seed","Seed","Seed+","Pre-A","A","A+","B","其他"];
+const AGENT = "agent";
+
+/* ================= State ================= */
+let db=null, user=null, assets=null, sample=null;
+let me={id:null}, canWrite=true;
+let deals=[], sel=null, tab="memo", filter="all", query="";
+let files=[], comments=[], history=[];
+let unsubSub=[];
+const names=new Map(), avatars=new Map();
+const chats=new Map(); const textCache=new Map();
+let editing=null, busy={};
+let intake={files:[],running:false,steps:[]}, intakeOpen=false, pickTarget="deal";
+const extOf=n=>(String(n).split(".").pop()||"").toLowerCase();
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const now=()=>Date.now();
+function fmtTime(t){if(!t)return"";const d=new Date(t);const p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`}
+function rel(t){if(!t)return"";const s=(now()-t)/1000;if(s<60)return"刚刚";if(s<3600)return Math.floor(s/60)+" 分钟前";if(s<86400)return Math.floor(s/3600)+" 小时前";if(s<86400*30)return Math.floor(s/86400)+" 天前";return fmtTime(t).slice(0,10)}
+function toast(m){const d=document.createElement("div");d.className="toast";d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),2600)}
+function nameOf(id){if(!id)return"未知";if(id===AGENT)return"Claude 分析助手";if(id===me.id)return(names.get(id)||"我");return names.get(id)||"成员"}
+function avatarHTML(id){if(id===AGENT)return `<div class="agent-av" aria-hidden="true">C</div>`;const a=avatars.get(id);return a?`<img src="${esc(a)}" alt="">`:`<div class="agent-av" style="background:var(--sunk);color:var(--muted)">·</div>`}
+async function refreshProfiles(ids){
+  if(!user)return; const want=[...new Set(ids.filter(x=>x&&x!==AGENT))]; if(!want.length)return;
+  let changed=false;
+  try{const ps=await user.profiles(want);for(const id of want){const p=ps[id];if(!p)continue;const n=p.name||"";if(names.get(id)!==n){names.set(id,n);changed=true}if(avatars.get(id)!==p.avatarUrl){avatars.set(id,p.avatarUrl);changed=true}}}catch(e){}
+  if(changed)render();
+}
+function weighted(sc){if(!sc)return null;let s=0,w=0;for(const[k,,wt]of DIMS){const v=Number(sc[k]);if(v>0){s+=v*wt;w+=wt}}return w?s/w:null}
+
+/* ================= Markdown-lite ================= */
+function srcCls(t){if(/BP|自述/.test(t))return"bp";if(/核实|验证/.test(t))return"ok";if(/推断/.test(t))return"inf";return"q"}
+/* ================= Bilingual glossary ================= */
+let gloss=[]; const gIdx=new Map(), gZh=new Map(); const glossPending=new Map(), glossTried=new Set(); let glossBusy=false, glossTimer=null, view="deals", gq="";
+const unesc=s=>String(s).replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,"&");
+const slug=s=>String(s).toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80);
+const termKey=en=>slug(String(en).split(/[,，;；]/)[0]);
+function indexGloss(list){gloss=list;gIdx.clear();gZh.clear();for(const g of list){for(const k of [g.id,slug(g.en||""),slug(g.abbr||"")])if(k)gIdx.set(k,g);if(g.zh)gZh.set(g.zh,g)}}
+function lookup(key,zh){return gIdx.get(key)||(zh&&gZh.get(zh))||null}
+const TERM_RE=/([一-鿿][一-鿿·]{0,13})\s?[（(]([A-Za-z][A-Za-z0-9 .,'’\-\/+]*?(?:&amp;[A-Za-z0-9 .,'’\-\/+]*?)*)[)）]/g;
+function markTerms(s){return s.replace(TERM_RE,(m,zh,en)=>{
+  const key=termKey(unesc(en));if(!key)return m;
+  let pre="",z=zh;const g0=gIdx.get(key);
+  if(g0&&g0.zh&&zh.endsWith(g0.zh)){pre=zh.slice(0,zh.length-g0.zh.length);z=g0.zh}
+  else{const i=Math.max(...[..."的是了将把从做让被"].map(c=>zh.lastIndexOf(c)));if(i>=0&&i<zh.length-1){pre=zh.slice(0,i+1);z=zh.slice(i+1)}}
+  if(!lookup(key,z))glossPending.set(key,{zh:unesc(z),en:unesc(en)});
+  return `${pre}<span class="term" tabindex="0" data-k="${key}" data-zh="${z}" data-en="${en}">${z} (${en})</span>`})}
+function glossHint(n){return gloss.slice().sort((a,b)=>(b.source==="user")-(a.source==="user")||(b.at||0)-(a.at||0)).slice(0,n).map(g=>`${g.zh} (${g.en}${g.abbr&&g.abbr!==g.en?", "+g.abbr:""})`).join("；")}
+const TERM_RULE=()=>`所有专业术语（生物医药、医疗、科技/AI、投资金融、法律合规领域）在每一节第一次出现时写成「中文 (English)」，有通用缩写时写成「中文 (English Full Name, ABBR)」或「中文 (ABBR)」，例如「逆折叠 (inverse folding)」「获客成本 (CAC)」「新药临床试验申请 (Investigational New Drug, IND)」；同一节再次出现可只写中文或缩写。公司名、人名、产品名不翻译。日常词不要加英文。${gloss.length?"\n优先沿用基金术语表的译法："+glossHint(150):""}`;
+function scheduleGloss(){if(glossTimer||glossBusy||!sample||!canWrite||!db||!glossPending.size)return;glossTimer=setTimeout(fillGloss,1500)}
+async function fillGloss(){
+  glossTimer=null;if(glossBusy)return;
+  const batch=[...glossPending.entries()].filter(([k,v])=>!glossTried.has(k)&&!lookup(k,v.zh)).slice(0,25);
+  glossPending.clear();if(!batch.length)return;
+  glossBusy=true;batch.forEach(([k])=>glossTried.add(k));
+  try{
+    const r=await sample.json(`为下面这些专业术语写中英双语的简明释义，读者是投资人，不一定懂专业。领域可能是生物医药、医疗、科技/AI、投资/金融、法律/合规。中文部分是从句子里截出来的，可能多带了前面几个无关的字，请给出真正的标准中文术语。\n只输出一个 JSON 数组，每项：{"key":"原样返回","zh":"标准中文术语","en":"English full term","abbr":"通用缩写，没有就空字符串","domain":"生物医药|医疗|科技/AI|投资/金融|法律/合规|其他","zhDef":"中文释义，大白话，不超过 60 字","enDef":"Plain-English definition, at most 35 words"}\n\n术语：\n${batch.map(([k,v])=>`- key=${k}：${v.zh} (${v.en})`).join("\n")}`,{modelTier:"quick"});
+    if(Array.isArray(r))for(let i=0;i<r.length;i++){
+      const t=r[i]||{};const key=(typeof t.key==="string"&&batch.some(([k])=>k===t.key))?t.key:batch[i]?.[0];if(!key||lookup(key))continue;
+      const pick=x=>typeof x==="string"?x.slice(0,400):"";
+      try{await db.doc("glossary/"+key).set({zh:pick(t.zh)||batch.find(([k])=>k===key)?.[1].zh||"",en:pick(t.en)||batch.find(([k])=>k===key)?.[1].en||"",abbr:pick(t.abbr),domain:pick(t.domain),zhDef:pick(t.zhDef),enDef:pick(t.enDef),source:"ai",by:me.id||"",at:now()})}catch(e){if(e?.code==="invalid_argument"){canWrite=false;break}}
+    }
+  }catch(e){console.warn("glossary",e)}
+  glossBusy=false;
+}
+/* tooltip */
+const tip=document.createElement("div");tip.className="tip";tip.hidden=true;tip.setAttribute("role","tooltip");tip.id="termTip";document.body.append(tip);
+let tipFor=null;
+function tipHTML(el){
+  const g=lookup(el.dataset.k,unesc(el.dataset.zh));
+  if(!g)return `<div class="tz">${el.dataset.zh}<span class="te">${el.dataset.en}</span></div><p class="note">${sample&&canWrite?"释义生成中，稍后再看…":"术语表里还没有这个词。"}</p>`;
+  return `<div class="tz">${esc(g.zh)}<span class="te">${esc(g.en)}${g.abbr&&g.abbr!==g.en?` · ${esc(g.abbr)}`:""}</span></div>
+    ${g.zhDef?`<p>${esc(g.zhDef)}</p>`:""}${g.enDef?`<p class="ten">${esc(g.enDef)}</p>`:""}
+    <div class="tm">${g.domain?esc(g.domain)+" · ":""}${g.source==="user"?"合伙人修订":"AI 生成"}</div>`;
+}
+function showTip(el){
+  tipFor=el;tip.innerHTML=tipHTML(el);tip.hidden=false;el.setAttribute("aria-describedby","termTip");
+  const r=el.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight;
+  let left=Math.min(Math.max(8,r.left),window.innerWidth-w-8);let top=r.bottom+6;if(top+h>window.innerHeight-8)top=Math.max(8,r.top-h-6);
+  tip.style.left=left+"px";tip.style.top=top+"px";
+}
+function hideTip(){if(tipFor)tipFor.removeAttribute("aria-describedby");tipFor=null;tip.hidden=true}
+document.addEventListener("mouseover",e=>{const t=e.target.closest?.(".term");if(t&&t!==tipFor)showTip(t)});
+document.addEventListener("mouseout",e=>{const t=e.target.closest?.(".term");if(t&&!t.contains(e.relatedTarget))hideTip()});
+document.addEventListener("focusin",e=>{const t=e.target.closest?.(".term");if(t)showTip(t)});
+document.addEventListener("focusout",e=>{if(e.target.closest?.(".term"))hideTip()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")hideTip()});
+document.addEventListener("scroll",hideTip,true);
+
+function inline(s){return markTerms(s).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/【(BP自述|BP|已核实|外部已验证|推断|待核实|待问)】/g,(m,t)=>`<span class="src src-${srcCls(t)}">${t}</span>`)}
+function md(s){if(!s)return"";const L=esc(s).split("\n");let o="",ul=false;for(const l of L){const li=/^\s*(?:[-•*]|\d+[.、)])\s+(.*)/.exec(l);if(li){if(!ul){o+="<ul>";ul=true}o+="<li>"+inline(li[1])+"</li>";continue}if(ul){o+="</ul>";ul=false}if(/^#{1,4}\s/.test(l)){o+="<h4>"+inline(l.replace(/^#+\s/,""))+"</h4>";continue}if(!l.trim())continue;o+="<p>"+inline(l)+"</p>"}if(ul)o+="</ul>";return o}
+
+/* ================= Render: list ================= */
+function renderFilters(){
+  const counts={all:deals.length};for(const d of deals){counts[d.status||"new"]=(counts[d.status||"new"]||0)+1}
+  const opts=[["all","全部"],...Object.entries(STATUS)];
+  $("#filters").innerHTML=opts.map(([k,v])=>`<button class="chipbtn" data-f="${k}" aria-pressed="${filter===k}">${v}${counts[k]?` <span class="mono">${counts[k]}</span>`:""}</button>`).join("");
+}
+function visibleDeals(){
+  const q=query.trim().toLowerCase();
+  return deals.filter(d=>(filter==="all"||(d.status||"new")===filter)&&(!q||[d.name,d.oneLiner,d.sector,d.stage,d.memo?.team].join(" ").toLowerCase().includes(q)))
+    .sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+}
+function renderList(){
+  if(mode==="events"&&db){renderEventList();return}
+  renderFilters();
+  $("#count").textContent=`${deals.length} 个项目`;
+  const v=visibleDeals();
+  if(!db){$("#list").innerHTML=`<p class="note" style="padding:16px">正在连接项目库…</p>`;return}
+  if(!v.length){$("#list").innerHTML=`<p class="note" style="padding:16px">${deals.length?"没有符合条件的项目":"还没有项目。把 BP 拖到右边，或在 Cowork 里发给 Claude。"}</p>`;return}
+  $("#list").innerHTML=v.map(d=>{const sc=weighted(d.scores);const st=d.status||"new";return `<button class="row${sel===d.id?" on":""}" data-id="${esc(d.id)}">
+    <span class="nm">${esc(d.name||"未命名项目")}</span><span class="score">${sc?sc.toFixed(1):"—"}</span>
+    <span class="ol">${esc(d.oneLiner||"还没有一句话介绍")}</span>
+    <span class="meta"><span class="pill st-${st}">${STATUS[st]}</span>${d.stage?`<span class="pill tag">${esc(d.stage)}</span>`:""}${d.sector?`<span>${esc(d.sector)}</span>`:""}<span>· ${rel(d.updatedAt)} ${esc(nameOf(d.updatedBy))}</span></span>
+  </button>`}).join("");
+}
+
+/* ================= Render: main ================= */
+function render(){renderList();renderMain()}
+function renderMain(){
+  const keep={};const foc=document.activeElement?.id;
+  const KEEP=["edText","cBox","askBox","intakeNotes","evNotes"];
+  for(const id of KEEP){const el=document.getElementById(id);if(el)keep[id]=el.value}
+  renderMainInner();
+  for(const[id,v]of Object.entries(keep)){const el=document.getElementById(id);if(el&&!el.value&&v)el.value=v}
+  if(foc&&KEEP.includes(foc))document.getElementById(foc)?.focus();
+  if(tipFor&&!tipFor.isConnected)hideTip();
+  scheduleGloss();
+}
+function renderMainInner(){
+  const d=deals.find(x=>x.id===sel);
+  $("#app").classList.toggle("detail",!!d||intakeOpen||view==="glossary");
+  if(view==="glossary"){$("#app").classList.add("detail");$("#main").innerHTML=glossaryHTML();return}
+  if(mode==="events"){const ev=events.find(x=>x.id===evSel);$("#app").classList.toggle("detail",!!ev||evOpen);$("#main").innerHTML=ev?eventHTML(ev):researchHTML();return}
+  if(!d){$("#main").innerHTML=emptyHTML();return}
+  const st=d.status||"new", r=d.round||{};
+  const term=(l,v)=>`<div><dt>${l}</dt><dd class="${v?"":"empty"}">${v?esc(v):"待补充"}</dd></div>`;
+  $("#main").innerHTML=`<div class="wrap">
+    <div class="dh">
+      <button class="btn ghost back" id="back">← 项目列表</button>
+      <div class="dh-top">
+        <h2>${esc(d.name||"未命名项目")}</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${canWrite?`<button class="btn" id="editBasics">编辑基本信息</button>`:""}
+        </div>
+      </div>
+      <div class="ol">${esc(d.oneLiner||"")}</div>
+      <div class="tags">
+        ${canWrite?`<select class="status" id="status" aria-label="项目状态">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}"${k===st?" selected":""}>${v}</option>`).join("")}</select>`:`<span class="pill st-${st}">${STATUS[st]}</span>`}
+        ${d.stage?`<span class="pill tag">${esc(d.stage)}</span>`:""}
+        ${d.sector?`<span class="pill tag">${esc(d.sector)}</span>`:""}
+        ${d.website?`<a class="pill tag" href="${esc(/^https?:/.test(d.website)?d.website:"https://"+d.website)}" target="_blank" rel="noopener">官网 ↗</a>`:""}
+        <span class="stamp">${esc(nameOf(d.createdBy))} 创建于 ${fmtTime(d.createdAt).slice(0,10)} · 最近更新 ${rel(d.updatedAt)}（${esc(nameOf(d.updatedBy))}）</span>
+      </div>
+    </div>
+    <dl class="terms" style="margin:0">
+      ${term("本轮融资额",r.raise)}${term("投前估值 (pre-money)",r.preMoney)}${term("出让比例",r.dilution)}${term("融资工具",r.instrument)}${term("领投方",r.lead)}${term("已有投资人",r.existing)}
+    </dl>
+    <div class="tabs" role="tablist">
+      ${[["memo","投资备忘录"],["files","项目资料",files.length],["chat","智能问答"],["comments","团队讨论",comments.length],["history","变更记录",history.length]].map(([k,l,n])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}${n?`<span class="n">${n}</span>`:""}</button>`).join("")}
+    </div>
+    <section id="panel">${panelHTML(d)}</section>
+  </div>`;
+  if(tab==="chat")scrollChat();
+}
+function emptyHTML(){
+  const R=intake.running, st=intake.steps, ok=canWrite&&db&&assets;
+  return `<div class="wrap"><div class="intake">
+    <button class="btn ghost back" id="back">← 项目列表</button>
+    <div class="ihead"><h2>新项目录入</h2>
+      <p>把 BP、PPT、PDF、Word、截图拖进来，或者粘贴项目介绍、微信聊天记录、官网链接。Claude 会自动识别公司、团队和融资条款，按「投资要点 + 13 节」框架生成投资备忘录，并建好档案。</p></div>
+    ${ok?`<div class="composer${R?" busy":""}" id="intakeDrop">
+      ${intake.files.length?`<div class="chips">${intake.files.map((f,i)=>`<span class="fchip"><span class="ftype">${esc(extOf(f.name))}</span><span class="fcn">${esc(f.name)}</span>${R?"":`<button class="x" data-rmf="${i}" aria-label="移除 ${esc(f.name)}">×</button>`}</span>`).join("")}</div>`:""}
+      <textarea id="intakeNotes" placeholder="粘贴项目介绍、聊天记录或链接（可选）。也可以直接把文件拖到这里。" ${R?"disabled":""}></textarea>
+      <div class="cbar"><button class="btn" id="intakePick" ${R?"disabled":""}>＋ 添加文件</button><span class="note">PDF · PPTX · DOCX · XLSX · 图片 · TXT</span><span class="grow"></span>
+        <button class="btn pri" id="intakeGo" ${R?"disabled":""}>${R?"处理中…":(sample?"开始分析":"上传并建档")}</button></div>
+    </div>`:`<p class="notice">${db?"只有项目编辑者可以新建项目。":"项目库还没连接上，请在 claude.ai 中登录后打开。"}</p>`}
+    ${st.length?`<ol class="prog">${st.map(s=>`<li class="${s.state||""}"><span class="dot" aria-hidden="true"></span><span>${esc(s.label)}${s.detail?`<span class="note"> · ${esc(s.detail)}</span>`:""}</span></li>`).join("")}</ol>`:""}
+    <div class="ihelp">
+      <div class="legend">Memo 里的来源标签：<span class="src src-bp">BP自述</span><span class="src src-ok">已核实</span><span class="src src-inf">推断</span><span class="src src-q">待核实</span></div>
+      <p class="note">页面里的分析只读你给的材料，不联网。想核实创始人背景、历轮融资和竞品，在 Cowork 里把项目丢给 Claude。</p>
+      ${ok?`<button class="btn ghost" id="manualNew">无材料，手动建档</button>`:""}
+    </div>
+  </div></div>`;
+}
+function panelHTML(d){
+  if(tab==="memo")return memoHTML(d);
+  if(tab==="files")return filesHTML();
+  if(tab==="chat")return chatHTML(d);
+  if(tab==="comments")return commentsHTML();
+  return historyHTML();
+}
+function memoHTML(d){
+  const sc=weighted(d.scores), m=d.memo||{};
+  const has=SECTIONS.some(s=>m[s.k]);
+  const rec=d.recommendation;
+  return `<div style="display:flex;flex-direction:column;gap:18px">
+    <div class="memo-head">
+      <div class="memo-src">${d.memoSource?`来源：${esc(d.memoSource)}`:"尚未生成备忘录"}${d.memoAt?` · ${fmtTime(d.memoAt)}`:""}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${canWrite&&sample?`<button class="btn pri" id="aiAnalyze" ${busy.analyze?"disabled":""}>${busy.analyze?"分析中…":(has?"重新生成分析":"生成初步分析")}</button>`:""}
+      </div>
+    </div>
+    ${busy.analyzeMsg?`<div class="notice">${esc(busy.analyzeMsg)}</div>`:""}
+    <div class="scorecard">
+      <div><div class="big">${sc?sc.toFixed(1):"—"}<small> / 5</small></div>${rec?`<div class="rec"><span class="pill ${RECS[rec]||"tag"}">建议 ${esc(rec)}</span></div>`:""}</div>
+      <div class="dims">${DIMS.map(([k,l,w])=>{const v=Number(d.scores?.[k])||0;return `<div class="dim"><span>${l} <span class="w">${Math.round(w*100)}%</span></span><span class="bar"><i style="width:${v/5*100}%"></i></span><span class="mono">${v||"—"}</span></div>`}).join("")}</div>
+    </div>
+    <div class="legend">来源标签：<span class="src src-bp">BP自述</span><span class="src src-ok">已核实</span><span class="src src-inf">推断</span><span class="src src-q">待核实</span></div>
+    ${SECTIONS.map((s,i)=>{const meta=(d.memoMeta||{})[s.k];const isEd=editing===s.k;return `<div class="sec">
+      <h3><span class="no">${String(i).padStart(2,"0")}</span>${s.t}<span class="en">${s.en}</span></h3>
+      <div class="body">
+        ${isEd?`<textarea id="edText" aria-label="${s.t}">${esc(m[s.k]||"")}</textarea>
+          <div class="tools"><button class="btn pri" data-save="${s.k}">保存</button><button class="btn ghost" data-cancel="1">取消</button><span>支持 **加粗**、「- 」列表，以及【BP自述】【已核实】【推断】【待核实】标签</span></div>`
+        :(m[s.k]?md(m[s.k]):`<div class="hint">${s.h}</div>`)}
+        ${!isEd?`<div class="tools">${meta?`<span>${esc(nameOf(meta.by))} · ${rel(meta.at)}</span>`:""}${canWrite?`<button class="btn ghost" data-edit="${s.k}">编辑</button>`:""}</div>`:""}
+      </div></div>`}).join("")}
+  </div>`;
+}
+function filesHTML(){
+  const rows=files.slice().sort((a,b)=>(b.uploadedAt||0)-(a.uploadedAt||0));
+  return `<div style="display:flex;flex-direction:column;gap:14px">
+    ${assets&&canWrite?`<div class="drop" id="drop"><strong>拖入文件，或 <button class="btn" id="pick">选择文件</button></strong>
+      <span class="note">PDF、PPTX、DOCX、XLSX、TXT/MD/CSV、图片。自动提取文字供 AI 分析和对话。PPTX / DOCX / XLSX 只保存提取的文字，想保留原版式请另存为 PDF 再上传。单个文件上限 20MB。</span>
+      ${busy.upload?`<span class="progress">${esc(busy.upload)}</span>`:""}</div>`
+      :`<p class="note">只有项目编辑者可以上传资料。</p>`}
+    ${rows.length?`<div class="tbl"><table><thead><tr><th>文件</th><th>上传人</th><th>时间</th><th>文字</th><th></th></tr></thead><tbody>
+      ${rows.map(f=>`<tr><td><span class="ftype">${esc(f.ext||"")}</span> <span class="fn">${esc(f.name)}</span>${f.note?`<div class="note">${esc(f.note)}</div>`:""}</td>
+        <td>${esc(nameOf(f.uploadedBy))}</td><td class="mono" style="white-space:nowrap">${fmtTime(f.uploadedAt)}</td>
+        <td class="mono">${f.chars?(f.chars>=1000?(f.chars/1000).toFixed(1)+"k":f.chars)+" 字":"—"}</td>
+        <td style="white-space:nowrap">${f.assetId?`<a class="btn ghost" href="/_blob/${esc(f.assetId)}" target="_blank" rel="noopener">打开</a>`:""}${f.textAssetId?`<a class="btn ghost" href="/_blob/${esc(f.textAssetId)}" target="_blank" rel="noopener">文字</a>`:""}</td></tr>`).join("")}
+    </tbody></table></div>`:`<p class="note">还没有资料。</p>`}
+  </div>`;
+}
+function chatHTML(d){
+  const t=chats.get(d.id)||[];
+  return `<div class="chat">
+    ${sample?"":`<p class="notice">对话功能在当前视图不可用。</p>`}
+    <p class="note">Claude 会基于本项目的 Memo 和全部已上传资料回答。对话只在你这次打开时保留，有价值的回答可以「存为讨论」。</p>
+    <div class="msgs" id="msgs">${t.map((m,i)=>`<div class="msg ${m.role==="user"?"u":"a"}">${m.role==="user"?esc(m.content).replace(/\n/g,"<br>"):md(m.content)}
+      ${m.role==="assistant"&&canWrite&&m.content&&!m.pending?`<div class="act"><button class="btn ghost" data-savechat="${i}">存为讨论</button></div>`:""}</div>`).join("")}</div>
+    ${!t.length?`<div class="sugs">${["用大白话讲讲这家公司在做什么","创始团队最大的优势和短板是什么？","这轮的估值合理吗？还缺哪些条款信息？","有哪些中美地缘相关的风险？","下次见创始人该问哪 5 个问题？"].map(s=>`<button class="chipbtn" data-sug="${esc(s)}">${esc(s)}</button>`).join("")}</div>`:""}
+    <div class="ask"><textarea id="askBox" placeholder="问问这个项目…（Enter 发送，Shift+Enter 换行）" ${sample?"":"disabled"}></textarea>
+      ${busy.chat?`<button class="btn" id="stopChat">停止</button>`:`<button class="btn pri" id="sendChat" ${sample?"":"disabled"}>发送</button>`}</div>
+  </div>`;
+}
+function commentsHTML(){
+  const rows=comments.slice().sort((a,b)=>(b.at||0)-(a.at||0));
+  return `<div style="display:flex;flex-direction:column;gap:14px">
+    ${canWrite?`<div class="compose"><textarea id="cBox" placeholder="写下你对这个项目的看法、疑问或跟进事项…"></textarea><div><button class="btn pri" id="postC">发表</button></div></div>`:""}
+    <div class="feed">${rows.length?rows.map(c=>`<div class="item">${avatarHTML(c.by)}<div><div><span class="who">${esc(nameOf(c.by))}</span><span class="when">${fmtTime(c.at)}</span>${c.fromChat?`<span class="pill tag" style="margin-left:6px">来自 AI 对话</span>`:""}</div><div class="txt">${c.fromChat?md(c.text):esc(c.text)}</div></div></div>`).join(""):`<p class="note">还没有讨论。</p>`}</div>
+  </div>`;
+}
+function historyHTML(){
+  const rows=history.slice().sort((a,b)=>(b.at||0)-(a.at||0));
+  return `<div>${rows.length?rows.map(h=>`<div class="hist"><span class="t">${fmtTime(h.at)}</span><span><b>${esc(nameOf(h.by))}</b> ${esc(h.action)}${h.detail?`：${esc(h.detail)}`:""}</span></div>`).join(""):`<p class="note">还没有记录。</p>`}</div>`;
+}
+function scrollChat(){const m=$("#msgs");if(m){const last=m.lastElementChild;if(last)last.scrollIntoView({block:"nearest"})}}
+
+/* ================= Data ================= */
+function dealRef(id){return db.doc("deals/"+id)}
+async function logH(id,action,detail,root){if(root==="events")return;try{await dealRef(id).collection("history").add({action,detail:detail||"",by:me.id||"",at:now()})}catch(e){}}
+async function touch(id,extra){await dealRef(id).update({updatedAt:now(),updatedBy:me.id||"",...(extra||{})})}
+function selectDeal(id){
+  if(sel===id)return; sel=id; editing=null; tab="memo"; files=[];comments=[];history=[];
+  try{localStorage.setItem("dr.sel",id||"")}catch(e){}
+  unsubSub.forEach(u=>u());unsubSub=[];
+  if(id&&db){
+    const sub=(c,set)=>dealRef(id).collection(c).onSnapshot(s=>{set(s.docs.map(x=>({id:x.id,...x.data()})));refreshProfiles(s.docs.map(x=>x.data().by||x.data().uploadedBy));if(sel===id)render()},e=>console.warn(c,e));
+    unsubSub.push(sub("files",v=>files=v),sub("comments",v=>comments=v),sub("history",v=>history=v));
+  }
+  render();
+}
+function writeErr(e){if(e&&e.code==="invalid_argument"){canWrite=false;toast("你没有修改权限");render()}else if(e&&e.code==="quota_exceeded"){toast("项目库存储已满，请清理旧资料")}else toast("保存失败，请稍后再试")}
+
+/* ================= Dialog: create / edit ================= */
+function openDialog(d){
+  const r=d?.round||{}, sc=d?.scores||{};
+  const sv=(k)=>`<select id="sc_${k}"><option value="">—</option>${[1,2,3,4,5].map(n=>`<option${Number(sc[k])===n?" selected":""}>${n}</option>`).join("")}</select>`;
+  const scrim=document.createElement("div");scrim.className="scrim";
+  scrim.innerHTML=`<form class="dlg" id="dlgForm"><h3>${d?"编辑基本信息":"新建项目"}</h3>
+    <div class="fgrid">
+      <label class="fld wide">公司 / 项目名 *<input id="f_name" required value="${esc(d?.name||"")}"></label>
+      <label class="fld wide">一句话介绍（大白话）<input id="f_one" value="${esc(d?.oneLiner||"")}" placeholder="例：帮药企用 AI 自动写 IND 申报材料"></label>
+      <label class="fld">赛道<input id="f_sector" value="${esc(d?.sector||"")}" placeholder="AI 生物医疗 / 具身智能 …"></label>
+      <label class="fld">轮次<select id="f_stage"><option value="">—</option>${STAGES.map(s=>`<option${d?.stage===s?" selected":""}>${s}</option>`).join("")}</select></label>
+      <label class="fld wide">官网<input id="f_web" value="${esc(d?.website||"")}" placeholder="example.com"></label>
+      <div class="groupt">本轮条款</div>
+      <label class="fld">本轮融资额<input id="r_raise" value="${esc(r.raise||"")}" placeholder="$3M"></label>
+      <label class="fld">投前估值<input id="r_pre" value="${esc(r.preMoney||"")}" placeholder="$15M pre"></label>
+      <label class="fld">出让比例<input id="r_dil" value="${esc(r.dilution||"")}" placeholder="~16.7%"></label>
+      <label class="fld">融资工具<input id="r_ins" value="${esc(r.instrument||"")}" placeholder="Post-money SAFE / 优先股"></label>
+      <label class="fld">领投方<input id="r_lead" value="${esc(r.lead||"")}"></label>
+      <label class="fld">已有投资人<input id="r_ex" value="${esc(r.existing||"")}"></label>
+      ${d?`<div class="groupt">评分（1–5）与建议</div>
+      ${DIMS.map(([k,l,w])=>`<label class="fld">${l}（${Math.round(w*100)}%）${sv(k)}</label>`).join("")}
+      <label class="fld wide">建议<select id="f_rec"><option value="">—</option>${Object.keys(RECS).map(x=>`<option${d.recommendation===x?" selected":""}>${x}</option>`).join("")}</select></label>`:""}
+    </div>
+    <div class="acts"><button type="button" class="btn ghost" id="dlgCancel">取消</button><button class="btn pri" type="submit">${d?"保存":"创建"}</button></div></form>`;
+  document.body.append(scrim);
+  $("#f_name").focus();
+  const close=()=>scrim.remove();
+  scrim.addEventListener("click",e=>{if(e.target===scrim)close()});
+  $("#dlgCancel").onclick=close;
+  $("#dlgForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const v=id=>($("#"+id)?.value||"").trim();
+    const body={name:v("f_name"),oneLiner:v("f_one"),sector:v("f_sector"),stage:v("f_stage"),website:v("f_web"),
+      round:{raise:v("r_raise"),preMoney:v("r_pre"),dilution:v("r_dil"),instrument:v("r_ins"),lead:v("r_lead"),existing:v("r_ex")}};
+    if(!body.name)return;
+    try{
+      if(d){
+        const scores={};DIMS.forEach(([k])=>{const x=Number(v("sc_"+k));scores[k]=x||0});
+        const changed=[];
+        if(body.name!==d.name)changed.push("名称");if(body.oneLiner!==(d.oneLiner||""))changed.push("一句话介绍");
+        if(JSON.stringify(body.round)!==JSON.stringify({raise:"",preMoney:"",dilution:"",instrument:"",lead:"",existing:"",...(d.round||{})}))changed.push("本轮条款");
+        if(JSON.stringify(scores)!==JSON.stringify({...Object.fromEntries(DIMS.map(([k])=>[k,0])),...(d.scores||{})}))changed.push("评分");
+        if(v("f_rec")!==(d.recommendation||""))changed.push("建议");
+        if(body.sector!==(d.sector||"")||body.stage!==(d.stage||"")||body.website!==(d.website||""))changed.push("赛道/轮次/官网");
+        await touch(d.id,{...body,scores,recommendation:v("f_rec")});
+        await logH(d.id,"编辑基本信息",changed.join("、")||"无改动");
+      }else{
+        const ref=db.collection("deals").doc();
+        await ref.set({...body,status:"new",scores:{},memo:{},createdBy:me.id||"",createdAt:now(),updatedBy:me.id||"",updatedAt:now()});
+        await logH(ref.id,"创建项目",body.name);
+        close();selectDeal(ref.id);return;
+      }
+      close();
+    }catch(err){writeErr(err)}
+  });
+}
+
+/* ================= Glossary view ================= */
+function glossRows(){
+  const q=gq.trim().toLowerCase();
+  const rows=gloss.filter(g=>!q||[g.zh,g.en,g.abbr,g.zhDef,g.enDef,g.domain].join(" ").toLowerCase().includes(q)).sort((a,b)=>String(a.domain||"").localeCompare(String(b.domain||""))||String(a.en||"").localeCompare(String(b.en||"")));
+  if(!rows.length)return `<tr><td colspan="5" class="note">${gloss.length?"没有匹配的术语":"术语表还是空的。Memo 里出现「中文 (English)」格式的词会自动收录。"}</td></tr>`;
+  return rows.map(g=>`<tr><td><b>${esc(g.zh)}</b><div class="note">${esc(g.en)}${g.abbr&&g.abbr!==g.en?` · ${esc(g.abbr)}`:""}</div></td><td>${esc(g.zhDef||"")}<div class="note">${esc(g.enDef||"")}</div></td><td style="white-space:nowrap">${esc(g.domain||"")}</td><td style="white-space:nowrap"><span class="pill ${g.source==="user"?"st-invested":"tag"}">${g.source==="user"?"合伙人修订":"AI 生成"}</span></td><td>${canWrite?`<button class="btn ghost" data-gedit="${esc(g.id)}">编辑</button>`:""}</td></tr>`).join("");
+}
+function glossaryHTML(){
+  return `<div class="wrap">
+    <div class="dh"><button class="btn ghost back" id="glossBack">← 返回</button>
+      <div class="dh-top"><h2>术语表 Glossary</h2>${canWrite?`<button class="btn" data-gedit="">＋ 添加术语</button>`:""}</div>
+      <div class="ol">Memo、对话和讨论里写成「中文 (English)」的专业词会自动收录进来，并由 AI 补上中英双语释义；鼠标悬停在这些词上就能看到解释。AI 的写法不对就直接改，改过的标为「合伙人修订」，之后的分析都会沿用。</div></div>
+    <input id="gq" class="search" type="search" placeholder="搜索术语…" value="${esc(gq)}" aria-label="搜索术语">
+    <div class="tbl"><table><thead><tr><th>术语</th><th>释义</th><th>领域</th><th>来源</th><th></th></tr></thead><tbody id="gRows">${glossRows()}</tbody></table></div>
+  </div>`;
+}
+function openGlossDialog(g){
+  const scrim=document.createElement("div");scrim.className="scrim";
+  const D=["生物医药","医疗","科技/AI","投资/金融","法律/合规","其他"];
+  scrim.innerHTML=`<form class="dlg" id="gForm"><h3>${g?"编辑术语":"添加术语"}</h3><div class="fgrid">
+    <label class="fld">中文 *<input id="g_zh" required value="${esc(g?.zh||"")}"></label>
+    <label class="fld">English *<input id="g_en" required value="${esc(g?.en||"")}"></label>
+    <label class="fld">缩写<input id="g_abbr" value="${esc(g?.abbr||"")}"></label>
+    <label class="fld">领域<select id="g_dom">${D.map(x=>`<option${g?.domain===x?" selected":""}>${x}</option>`).join("")}</select></label>
+    <label class="fld wide">中文释义<textarea id="g_zd">${esc(g?.zhDef||"")}</textarea></label>
+    <label class="fld wide">English definition<textarea id="g_ed">${esc(g?.enDef||"")}</textarea></label>
+  </div><div class="acts"><button type="button" class="btn ghost" id="gCancel">取消</button><button class="btn pri" type="submit">保存</button></div></form>`;
+  document.body.append(scrim);$("#g_zh").focus();
+  const close=()=>scrim.remove();scrim.addEventListener("click",e=>{if(e.target===scrim)close()});$("#gCancel").onclick=close;
+  $("#gForm").addEventListener("submit",async e=>{e.preventDefault();const v=id=>($("#"+id).value||"").trim();
+    const id=g?.id||termKey(v("g_en"));if(!id)return;
+    try{await db.doc("glossary/"+id).set({zh:v("g_zh"),en:v("g_en"),abbr:v("g_abbr"),domain:v("g_dom"),zhDef:v("g_zd"),enDef:v("g_ed"),source:"user",by:me.id||"",at:now()});close();toast("已保存")}catch(err){writeErr(err)}});
+}
+
+/* ================= Text extraction ================= */
+const NS={a:"http://schemas.openxmlformats.org/drawingml/2006/main",w:"http://schemas.openxmlformats.org/wordprocessingml/2006/main",s:"http://schemas.openxmlformats.org/spreadsheetml/2006/main"};
+const STORABLE={pdf:"application/pdf",png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",gif:"image/gif",webp:"image/webp",txt:"text/plain",md:"text/markdown",csv:"text/csv",json:"application/json"};
+function paras(xml,ns,tagP,tagT){const doc=new DOMParser().parseFromString(xml,"application/xml");return [...doc.getElementsByTagNameNS(ns,tagP)].map(p=>[...p.getElementsByTagNameNS(ns,tagT)].map(t=>t.textContent).join("")).filter(Boolean).join("\n")}
+async function extractText(file,ext,onp){
+  if(ext==="pdf"){
+    if(!window.pdfjsLib)return"";
+    const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;const out=[];
+    for(let i=1;i<=pdf.numPages;i++){onp&&onp(`读取第 ${i}/${pdf.numPages} 页`);const tc=await(await pdf.getPage(i)).getTextContent();out.push(`--- 第 ${i} 页 ---\n`+tc.items.map(x=>x.str+(x.hasEOL?"\n":" ")).join(""))}
+    return out.join("\n\n");
+  }
+  if(["pptx","docx","xlsx"].includes(ext)){
+    if(!window.JSZip)return"";
+    const zip=await JSZip.loadAsync(file);
+    if(ext==="pptx"){const sl=Object.keys(zip.files).filter(n=>/^ppt\/slides\/slide\d+\.xml$/.test(n)).sort((a,b)=>parseInt(a.match(/\d+/))-parseInt(b.match(/\d+/)));const out=[];for(let i=0;i<sl.length;i++){out.push(`--- 第 ${i+1} 页 ---\n`+paras(await zip.file(sl[i]).async("string"),NS.a,"p","t"))}return out.join("\n\n")}
+    if(ext==="docx"){const f=zip.file("word/document.xml");return f?paras(await f.async("string"),NS.w,"p","t"):""}
+    if(ext==="xlsx"){const f=zip.file("xl/sharedStrings.xml");return f?paras(await f.async("string"),NS.s,"si","t"):""}
+  }
+  if(["txt","md","csv","json"].includes(ext))return await file.text();
+  return "";
+}
+async function prepFile(file,onp){
+  const ext=extOf(file.name);let text="";
+  try{text=await extractText(file,ext,onp)}catch(e){console.warn(e)}
+  return {name:file.name,ext,size:file.size,text:text||"",file};
+}
+async function storePrep(id,p,onp,root){
+  let assetId=null,textAssetId=null,note="";
+  if(p.file){
+    if(STORABLE[p.ext]&&p.size<=20*1024*1024){onp&&onp("上传原件…");assetId=(await assets.upload(p.file,{type:STORABLE[p.ext]})).id}
+    else if(STORABLE[p.ext])note="原件超过 20MB，只保存了提取的文字";
+    else note="该格式只保存提取的文字；想保留版式请另存为 PDF 再上传";
+  }else note="粘贴的文字";
+  if(p.text.trim()){onp&&onp("保存文字…");textAssetId=(await assets.upload(new Blob([p.text],{type:"text/plain"}),{type:"text/plain"})).id;textCache.set(textAssetId,p.text)}
+  else if(!assetId)note="没能提取到文字，也无法保存原件（扫描件请截图上传）";
+  else if(p.ext==="pdf")note="未提取到文字（可能是扫描件）";
+  await db.doc((root||"deals")+"/"+id).collection("files").add({name:p.name,ext:p.ext,size:p.size,assetId,textAssetId,chars:p.text.length,note,uploadedBy:me.id||"",uploadedAt:now()});
+  await logH(id,"上传资料",p.name,root);
+}
+async function uploadFiles(list){
+  if(!assets||!sel||!list.length)return;
+  const id=sel;
+  for(const file of list){
+    const setP=m=>{busy.upload=`${file.name}：${m}`;if(tab==="files")renderMain()};
+    try{setP("提取文字…");const p=await prepFile(file,setP);await storePrep(id,p,setP);await touch(id)}
+    catch(e){console.warn(e);toast(`${file.name} 上传失败${e?.code?"（"+e.code+"）":""}`)}
+  }
+  busy.upload="";if(tab==="files")renderMain();
+}
+
+/* ================= Intake: drop files → auto analysis → new deal ================= */
+function guessName(preps){const f=preps.find(p=>p.file);return f?f.name.replace(/\.[^.]+$/,"").replace(/[_-]+/g," ").slice(0,60):"新项目 "+fmtTime(now()).slice(0,10)}
+function errCopy(e){return e?.code==="not_granted"?"没有获得 AI 使用授权":e?.code==="rate_limited"?"请求太频繁，请稍后再试":e?.code==="invalid_json"?"AI 返回的格式不完整":"AI 分析没有完成"}
+function addIntakeFiles(list){
+  const seen=new Set(intake.files.map(f=>f.name+f.size));
+  for(const f of list){if(!seen.has(f.name+f.size))intake.files.push(f)}
+  intakeOpen=true;renderMain();
+}
+async function runIntake(){
+  if(intake.running)return;
+  const notes=($("#intakeNotes")?.value||"").trim();
+  if(!intake.files.length&&!notes){toast("先添加文件，或粘贴一段项目介绍");return}
+  intake.running=true;
+  const steps=intake.steps=[{k:"ex",label:"提取文字",state:"on"},{k:"ai",label:"识别公司信息并生成投资备忘录",state:""},{k:"save",label:"建档并保存资料",state:""}];
+  const S=(k,state,detail)=>{const s=steps.find(x=>x.k===k);s.state=state;s.detail=detail||"";if(!sel)renderMain()};
+  renderMain();
+  const preps=[];
+  for(const f of intake.files){S("ex","on",f.name);preps.push(await prepFile(f,m=>S("ex","on",`${f.name} · ${m}`)))}
+  if(notes)preps.push({name:"项目介绍（粘贴）.txt",ext:"txt",size:notes.length,text:notes,file:null});
+  const chars=preps.reduce((a,p)=>a+p.text.length,0);
+  S("ex","done",`${preps.length} 份材料，约 ${chars>=1000?(chars/1000).toFixed(1)+"k":chars} 字`);
+  let r=null;
+  if(sample&&chars>0){
+    S("ai","on","通常需要 1–2 分钟，可以先去看别的项目");
+    try{r=await sample.json(buildPrompt("（新项目，名称和基本信息请从材料中识别）",packTexts(preps,170000)),{modelTier:"complex"});if(!r||typeof r!=="object"||!r.memo)throw{code:"invalid_json"};S("ai","done")}
+    catch(e){console.warn(e);r=null;S("ai","fail",errCopy(e)+"，建档后可在 Memo 里重试")}
+  }else S("ai","skip",sample?"材料里没有可读的文字":"AI 在当前视图不可用");
+  S("save","on");
+  try{
+    const ref=db.collection("deals").doc();
+    const base={name:(r&&String(r.name||"").trim())||guessName(preps),status:"new",scores:{},memo:{},round:{},createdBy:me.id||"",createdAt:now(),updatedBy:me.id||"",updatedAt:now()};
+    await ref.set(base);
+    await logH(ref.id,"创建项目",intake.files.length?`拖入 ${intake.files.length} 份资料${notes?"，并粘贴了介绍":""}`:"粘贴项目介绍");
+    for(const p of preps){S("save","on",p.name);try{await storePrep(ref.id,p)}catch(e){console.warn(e);toast(`${p.name} 保存失败`)}}
+    if(r)await applyAnalysis({id:ref.id,...base},r,preps.filter(p=>p.text).length);
+    else await touch(ref.id);
+    intake={files:[],running:false,steps:[]};intakeOpen=false;
+    selectDeal(ref.id);
+    toast(r?"已建档，投资备忘录已生成":"已建档。可在投资备忘录中点击「生成初步分析」");
+  }catch(e){S("save","fail");intake.running=false;writeErr(e);renderMain()}
+}
+
+/* ================= AI context ================= */
+async function getText(id){if(textCache.has(id))return textCache.get(id);try{const t=await(await fetch("/_blob/"+id)).text();textCache.set(id,t);return t}catch(e){return""}}
+const enc=new TextEncoder();
+function packTexts(list,budget){
+  let out="",used=0;
+  for(const f of list){
+    if(!f.text||!f.text.trim())continue;let t=f.text;
+    const head=`\n\n=== 资料：${f.name} ===\n`;const room=budget-used-enc.encode(head).length;if(room<2000)break;
+    let b=enc.encode(t);if(b.length>room){t=new TextDecoder().decode(b.slice(0,room)).replace(/\uFFFD+$/,"")+"\n[……已截断]"}
+    out+=head+t;used+=enc.encode(head+t).length;
+  }
+  return out;
+}
+async function materials(budget){
+  const list=[];
+  for(const f of files.slice().sort((a,b)=>(a.uploadedAt||0)-(b.uploadedAt||0))){if(f.textAssetId)list.push({name:f.name,text:await getText(f.textAssetId)})}
+  return packTexts(list,budget);
+}
+function dealSummary(d){
+  const m=d.memo||{};
+  return `项目：${d.name}\n一句话：${d.oneLiner||""}\n赛道：${d.sector||""}；轮次：${d.stage||""}；状态：${STATUS[d.status||"new"]}\n本轮条款：${JSON.stringify(d.round||{})}\n评分：${JSON.stringify(d.scores||{})}；建议：${d.recommendation||""}\n\n现有 Memo：\n`+SECTIONS.filter(s=>m[s.k]).map(s=>`## ${s.t}\n${m[s.k]}`).join("\n\n");
+}
+const FUND=`我们是一支美元早期风投基金（种子到 A 轮为主），投资方向：AI 基础设施、机器人/具身智能、AI 生物医疗、AI 应用与 Agent、美国制造回流。GP 背景：法律与跨境（Charles Cheng）、AI 与生态（Sonya Chen，前 Meta 工程师，UCSF 药物研发 AI）、资本与基金管理（Kai Jackie L）。`;
+
+/* ================= AI analyze ================= */
+async function analyze(d){
+  if(!sample)return;
+  busy.analyze=true;busy.analyzeMsg="正在读取资料…";renderMain();
+  try{
+    const mats=await materials(170000);
+    if(!mats.trim()){busy.analyzeMsg="请先在「资料」里上传 BP 或其他材料，再做分析。";busy.analyze=false;renderMain();return}
+    busy.analyzeMsg="Claude 正在按框架分析，通常需要 1–2 分钟…";renderMain();
+    const r=await sample.json(buildPrompt(dealSummary(d),mats),{modelTier:"complex"});
+    if(!r||typeof r!=="object"||!r.memo)throw{code:"invalid_json"};
+    await applyAnalysis(d,r,files.filter(f=>f.textAssetId).length);
+    busy.analyzeMsg="";
+  }catch(e){
+    console.warn(e);
+    busy.analyzeMsg=e?.code==="not_granted"?"没有获得 AI 使用授权，可在页面权限里开启。":e?.code==="rate_limited"?"请求太频繁，请稍等几分钟再试。":e?.code==="invalid_json"?"AI 返回的格式不完整，请再试一次；材料很长时可以先删减资料。":"分析没有完成，请稍后再试。";
+  }
+  busy.analyze=false;renderMain();
+}
+function buildPrompt(summary,mats){
+  const spec=SECTIONS.map(s=>`- ${s.k}（${s.t} / ${s.en}）：${s.h}`).join("\n");
+  return `你是一位资深早期风投分析师，为下面这支基金做项目初筛和信息梳理。\n${FUND}\n\n请只根据下方提供的项目材料（你无法联网），先识别公司基本信息和本轮融资条款，再按框架输出分析。要求：\n1. 中文为主。${TERM_RULE()}\n2. 「大白话」一节要让完全不懂行的人也能看懂，并给一个类比。\n3. 每个关键事实前加来源标签：【BP自述】=材料里公司自己说的；【推断】=你的推理；【待核实】=材料没提供、需要问创始人或外部核实的。你不能联网，所以不要使用【已核实】。\n4. 每节用「- 」列表，每节不超过 220 字；信息缺失就直接写缺什么。\n5. 评分 1–5 分（5 最好），信息不足的维度打保守分。\n6. 基本信息和条款字段只填材料里明确出现的内容（可以附单位，如 "$3M"、"$15M pre"），没有就留空字符串，不要猜。\n\n框架各节：\n${spec}\n\n只输出一个 JSON 对象，结构如下：\n{"name":"公司名（英文名和中文名都有就写「English 中文」）","oneLiner":"一句话大白话介绍","sector":"赛道","stage":"轮次，如 Pre-seed / Seed / Pre-A / A","website":"","round":{"raise":"本轮融资额","preMoney":"投前估值","dilution":"出让比例","instrument":"融资工具","lead":"领投方","existing":"已有投资人"},"scores":{"team":0,"market":0,"product":0,"traction":0,"terms":0,"fit":0},"recommendation":"Pass|Track|Deep Dive","memo":{${SECTIONS.map(s=>`"${s.k}":"…"`).join(",")}}}\n\n=== 项目基本信息 ===\n${summary}\n\n=== 项目材料 ===${mats}`;
+}
+async function applyAnalysis(d,r,nFiles){
+  const memo={},memoMeta={};for(const s of SECTIONS){if(typeof r.memo?.[s.k]==="string"){memo[s.k]=r.memo[s.k];memoMeta[s.k]={by:AGENT,at:now()}}}
+  const round={...(d.round||{})};for(const k of ["raise","preMoney","dilution","instrument","lead","existing"]){if(!round[k]&&r.round?.[k])round[k]=String(r.round[k])}
+  const scores={};for(const[k]of DIMS){const x=Math.round(Number(r.scores?.[k]));scores[k]=x>=1&&x<=5?x:0}
+  const upd={memo,memoMeta,round,scores,memoSource:"AI 基于上传材料的初步分析（未联网核实）",memoAt:now()};
+  if(Object.keys(RECS).includes(r.recommendation))upd.recommendation=r.recommendation;
+  for(const k of ["oneLiner","sector","stage","website"]){if(!d[k]&&r[k])upd[k]=String(r[k])}
+  await touch(d.id,upd);await logH(d.id,"运行 AI 初步分析",`基于 ${nFiles} 份资料识别基本信息、生成 Memo 和评分`);
+}
+
+/* ================= Chat ================= */
+let chatCtl=null;
+async function sendChat(text){
+  const d=deals.find(x=>x.id===sel);if(!d||!sample||!text.trim()||busy.chat)return;
+  const t=chats.get(d.id)||[];chats.set(d.id,t);
+  t.push({role:"user",content:text.trim()});const a={role:"assistant",content:"思考中…",pending:true};t.push(a);
+  busy.chat=true;renderMain();
+  try{
+    const mats=await materials(150000);
+    const rules=`你是这支风投基金的项目分析助手。${FUND}\n请只根据下面的项目信息和资料回答合伙人的问题，中文为主。${TERM_RULE()}\n区分「材料里公司自己说的」【BP自述】、「你的推断」【推断】和「材料里没有、需要核实的」【待核实】。答案简洁、具体，必要时用「- 」列表。资料里没有的不要编造，直接说不知道并建议去问创始人什么。\n\n=== 项目信息与 Memo ===\n${dealSummary(d)}\n\n=== 资料 ===${mats||"\n（还没有上传资料）"}`;
+    const turns=[{role:"user",content:rules},{role:"assistant",content:"好的，我已读完这个项目的资料，请提问。"},...t.filter(m=>!m.pending).map(m=>({role:m.role,content:m.content}))];
+    chatCtl=new AbortController();
+    const r=await sample(turns,{cache:false,signal:chatCtl.signal,onText:({text})=>{a.content=text;const el=$("#msgs");if(el&&el.lastElementChild){el.lastElementChild.innerHTML=md(text);scrollChat()}}});
+    a.content=r.text+(r.truncated?"\n\n（回答被截断，可以让我接着说）":"");
+  }catch(e){a.content=(e?.text||"")+(e?.code==="cancelled"?"\n（已停止）":e?.code==="not_granted"?"没有获得 AI 使用授权。":e?.code==="rate_limited"?"请求太频繁，请稍后再试。":"\n（回答没有完成，请再试一次）")}
+  a.pending=false;busy.chat=false;chatCtl=null;if(sel===d.id&&tab==="chat")renderMain();
+}
+
+/* ================= Event notes · industry research ================= */
+let mode="deals", events=[], evSel=null, evTab="summary", resTab="pains", resSector="all", rq="", evOpen=false;
+let evIntake={files:[],running:false,steps:[]}; const research=new Map(); let evFiles=[], evUnsub=null; const evBusy={};
+const SECTORS=["AI 基础设施","机器人/具身智能","AI 生物医疗","医疗器械","数字医疗","AI 应用与 Agent","美国制造回流","金融科技","法律科技","能源与气候","其他"];
+const EV_TYPES=["峰会","论坛","路演","闭门会","展会","学术会议","其他"];
+const il=s=>inline(esc(s||""));
+function hashId(s){let h=5381;for(const c of String(s))h=((h*33)^c.codePointAt(0))>>>0;return "s-"+h.toString(36)}
+function evDate(e){return e.date||(e.createdAt?fmtTime(e.createdAt).slice(0,10):"")}
+function sortedEvents(){return events.slice().sort((a,b)=>String(evDate(b)).localeCompare(String(evDate(a)))||(b.createdAt||0)-(a.createdAt||0))}
+function allItems(kind){const out=[];for(const e of events){(e[kind]||[]).forEach((x,i)=>out.push({...x,_ev:e,_i:i}))}return out}
+function matchQ(obj,keys){const q=rq.trim().toLowerCase();return !q||keys.map(k=>obj[k]||"").join(" ").toLowerCase().includes(q)}
+function dealByName(n){const k=String(n||"").trim().toLowerCase();return k?deals.find(d=>String(d.name||"").toLowerCase().includes(k)||k.includes(String(d.name||"").toLowerCase().split(" ")[0]||"\u0000")):null}
+
+function renderEventList(){
+  const q=query.trim().toLowerCase();
+  const v=sortedEvents().filter(e=>!q||[e.name,e.location,(e.themes||[]).join(" "),e.summary].join(" ").toLowerCase().includes(q));
+  $("#count").textContent=`${events.length} 场会议`;
+  $("#filters").innerHTML="";
+  if(!v.length){$("#list").innerHTML=`<p class="note" style="padding:16px">${events.length?"没有符合条件的会议":"还没有会议笔记。把笔记拖到右边即可。"}</p>`;return}
+  $("#list").innerHTML=v.map(e=>`<button class="row${evSel===e.id?" on":""}" data-ev="${esc(e.id)}">
+    <span class="nm">${esc(e.name||"未命名会议")}</span><span class="note mono">${esc(evDate(e))}</span>
+    <span class="ol">${esc([e.type,e.location].filter(Boolean).join(" · ")||"—")}</span>
+    <span class="meta"><span class="pill st-dd">痛点 ${(e.pains||[]).length}</span><span class="pill tag">公司 ${(e.companies||[]).length}</span><span class="pill tag">人物 ${(e.people||[]).length}</span></span>
+  </button>`).join("");
+}
+function sevHTML(n){n=Math.max(0,Math.min(5,Number(n)||0));return `<span class="sev" title="紧迫度 ${n}/5" aria-label="紧迫度 ${n}/5">${[1,2,3,4,5].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</span>`}
+function srcLink(e,extra){return `<button class="linkbtn" data-ev="${esc(e.id)}">${esc(e.name||"未命名会议")}</button><span class="note"> · ${esc(evDate(e))}${extra?` · ${esc(extra)}`:""}</span>`}
+function delBtn(x,kind){return canWrite?`<button class="x" data-delitem="${esc(x._ev.id)}|${kind}|${x._i}" aria-label="删除这条">×</button>`:""}
+
+function painCard(p,showSrc){
+  return `<article class="pain">
+    <div class="ph"><h4>${il(p.pain)}</h4>${sevHTML(p.severity)}${delBtn(p,"pains")}</div>
+    ${p.who?`<div class="pr"><span class="lb">谁在痛</span><span>${il(p.who)}</span></div>`:""}
+    ${p.detail?`<div class="pr"><span class="lb">具体表现</span><span>${il(p.detail)}</span></div>`:""}
+    ${p.quote?`<blockquote>“${esc(p.quote)}”${p.speaker?`<cite>— ${esc(p.speaker)}</cite>`:""}</blockquote>`:(p.speaker?`<div class="pr"><span class="lb">提出者</span><span>${esc(p.speaker)}</span></div>`:"")}
+    ${p.current?`<div class="pr"><span class="lb">现有方案</span><span>${il(p.current)}</span></div>`:""}
+    ${p.opportunity?`<div class="pr opp"><span class="lb">投资机会</span><span>${il(p.opportunity)}</span></div>`:""}
+    ${showSrc?`<div class="psrc">${srcLink(p._ev)}</div>`:""}
+  </article>`;
+}
+function painsView(list,showSrc,withInsight){
+  const groups=new Map();for(const p of list){const s=p.sector||"其他";if(!groups.has(s))groups.set(s,[]);groups.get(s).push(p)}
+  const order=[...groups.entries()].sort((a,b)=>b[1].length-a[1].length);
+  if(!order.length)return `<p class="note">还没有提取到行业痛点。</p>`;
+  return order.map(([s,ps])=>{ps.sort((a,b)=>(b.severity||0)-(a.severity||0)||(b._ev.createdAt||0)-(a._ev.createdAt||0));
+    const ins=research.get(hashId(s));const evN=new Set(ps.map(p=>p._ev.id)).size;
+    return `<section class="secgrp"><div class="sgh"><h3>${esc(s)}</h3><span class="note">${ps.length} 条痛点 · 来自 ${evN} 场会议</span>
+      ${withInsight&&sample&&canWrite?`<button class="btn" data-insight="${esc(s)}" ${evBusy["ins:"+s]?"disabled":""}>${evBusy["ins:"+s]?"归纳中…":(ins?"更新行业洞察":"生成行业洞察")}</button>`:""}</div>
+      ${withInsight&&ins?`<div class="insight"><div class="note">行业洞察 · ${esc(nameOf(ins.by))} · ${fmtTime(ins.at)} · 基于 ${ins.n||"?"} 条痛点</div>${md(ins.text)}</div>`:""}
+      <div class="pains">${ps.map(p=>painCard(p,showSrc)).join("")}</div></section>`}).join("");
+}
+function leadsView(list,showSrc){
+  if(!list.length)return `<p class="note">还没有公司线索。</p>`;
+  return `<div class="tbl"><table><thead><tr><th>公司</th><th>在做什么</th><th>信号</th><th>匹配度</th>${showSrc?"<th>来源</th>":""}<th></th></tr></thead><tbody>
+  ${list.map(c=>{const d=c.dealId?deals.find(x=>x.id===c.dealId):null;const fitc=c.fit==="高"?"st-invested":c.fit==="中"?"st-dd":"tag";
+    return `<tr><td><b>${esc(c.name)}</b><div class="note">${esc([c.sector,c.stage].filter(Boolean).join(" · "))}</div>${c.website?`<a class="note" href="${esc(/^https?:/.test(c.website)?c.website:"https://"+c.website)}" target="_blank" rel="noopener">${esc(c.website)} ↗</a>`:""}</td>
+    <td>${il(c.what)}</td><td>${il(c.signals)}</td><td>${c.fit?`<span class="pill ${fitc}">${esc(c.fit)}</span>`:""}<div class="note">${esc(c.fitReason||"")}</div></td>
+    ${showSrc?`<td>${srcLink(c._ev)}</td>`:""}
+    <td style="white-space:nowrap">${d?`<button class="btn ghost" data-id="${esc(d.id)}">查看项目 →</button>`:(canWrite?`<button class="btn" data-todeal="${esc(c._ev.id)}|${c._i}">转为项目</button>`:"")}${delBtn(c,"companies")}</td></tr>`}).join("")}
+  </tbody></table></div>`;
+}
+function peopleView(list,showSrc){
+  if(!list.length)return `<p class="note">还没有人物信息。</p>`;
+  return `<div class="tbl"><table><thead><tr><th>人物</th><th>身份</th><th>核心观点</th><th>跟进</th>${showSrc?"<th>来源</th>":""}<th></th></tr></thead><tbody>
+  ${list.map(p=>`<tr><td><b>${esc(p.name)}</b><div class="note">${esc([p.title,p.org].filter(Boolean).join(" · "))}</div></td><td>${p.role?`<span class="pill tag">${esc(p.role)}</span>`:""}</td>
+    <td>${il(p.takeaways)}</td><td>${il(p.followUp)}</td>${showSrc?`<td>${srcLink(p._ev)}</td>`:""}<td>${delBtn(p,"people")}</td></tr>`).join("")}
+  </tbody></table></div>`;
+}
+function sectorChips(list){
+  const c=new Map();for(const p of list){const s=p.sector||"其他";c.set(s,(c.get(s)||0)+1)}
+  const opts=[["all","全部行业",list.length],...[...c.entries()].sort((a,b)=>b[1]-a[1]).map(([s,n])=>[s,s,n])];
+  return `<div class="filters">${opts.map(([k,l,n])=>`<button class="chipbtn" data-sec="${esc(k)}" aria-pressed="${resSector===k}">${esc(l)} <span class="mono">${n}</span></button>`).join("")}</div>`;
+}
+function evComposerHTML(){
+  const R=evIntake.running, st=evIntake.steps, ok=canWrite&&db&&assets;
+  return `<div class="ihead"><h2>会议笔记录入</h2><p>把参加会议、峰会、闭门会的笔记拖进来：文字、Word、PDF、PPT，或现场拍的照片都可以，也可以直接粘贴。系统会自动提取人物、公司和行业痛点，并汇总进行业痛点库。</p></div>
+    ${ok?`<div class="composer${R?" busy":""}" id="evDrop">
+      ${evIntake.files.length?`<div class="chips">${evIntake.files.map((f,i)=>`<span class="fchip"><span class="ftype">${esc(extOf(f.name))}</span><span class="fcn">${esc(f.name)}</span>${R?"":`<button class="x" data-rmev="${i}" aria-label="移除 ${esc(f.name)}">×</button>`}</span>`).join("")}</div>`:""}
+      <textarea id="evNotes" placeholder="粘贴会议笔记（可选）。建议第一行写会议名称和日期，例如：BIO 2026 · 6月22日 · San Diego" ${R?"disabled":""}></textarea>
+      <div class="cbar"><button class="btn" id="evPick" ${R?"disabled":""}>＋ 添加文件</button><span class="note">TXT · MD · DOCX · PDF · PPTX · 照片</span><span class="grow"></span>
+        <button class="btn pri" id="evGo" ${R?"disabled":""}>${R?"处理中…":"提取并归档"}</button></div>
+    </div>`:`<p class="notice">${db?"只有编辑者可以录入会议笔记。":"项目库还没连接上。"}</p>`}
+    ${st.length?`<ol class="prog">${st.map(s=>`<li class="${s.state||""}"><span class="dot" aria-hidden="true"></span><span>${esc(s.label)}${s.detail?`<span class="note"> · ${esc(s.detail)}</span>`:""}</span></li>`).join("")}</ol>`:""}`;
+}
+function researchHTML(){
+  const pains=allItems("pains"), cos=allItems("companies"), ppl=allItems("people");
+  const fp=pains.filter(p=>(resSector==="all"||(p.sector||"其他")===resSector)&&matchQ(p,["pain","who","detail","quote","opportunity","current","speaker"]));
+  const fc=cos.filter(c=>(resSector==="all"||(c.sector||"其他")===resSector)&&matchQ(c,["name","what","signals","sector"]));
+  const fpp=ppl.filter(p=>matchQ(p,["name","title","org","takeaways","followUp"]));
+  return `<div class="wrap"><button class="btn ghost back" id="evBack">← 会议列表</button>
+    <div class="intake" style="margin-top:0">${evComposerHTML()}</div>
+    <div class="dh"><h2>行业投研</h2><div class="ol">所有会议里提取出的痛点、公司和人物汇总在这里。按行业筛选，点「生成行业洞察」可以让 Claude 跨会议归纳这个行业的共性痛点和投资方向。</div></div>
+    <div class="tabs" role="tablist">${[["pains","行业痛点库",pains.length],["leads","公司线索",cos.length],["people","人物",ppl.length]].map(([k,l,n])=>`<button class="tab" role="tab" data-rtab="${k}" aria-selected="${resTab===k}">${l}<span class="n">${n}</span></button>`).join("")}</div>
+    <input id="rq" class="search" type="search" placeholder="搜索痛点、公司、人物…" value="${esc(rq)}" aria-label="搜索投研内容">
+    ${resTab!=="people"?sectorChips(resTab==="pains"?pains:cos):""}
+    <div id="rBody">${resTab==="pains"?painsView(fp,true,true):resTab==="leads"?leadsView(fc,true):peopleView(fpp,true)}</div>
+  </div>`;
+}
+function eventHTML(e){
+  const pick=k=>(e[k]||[]).map((x,i)=>({...x,_ev:e,_i:i}));
+  const T=[["summary","会议要点"],["pains","行业痛点",(e.pains||[]).length],["leads","公司",(e.companies||[]).length],["people","人物",(e.people||[]).length],["notes","原始笔记",evFiles.length]];
+  let body="";
+  if(evTab==="summary")body=`${(e.themes||[]).length?`<div class="filters">${e.themes.map(t=>`<span class="pill tag">${esc(t)}</span>`).join("")}</div>`:""}<div class="memo-body">${e.summary?md(e.summary):`<p class="note">还没有要点。</p>`}</div>`;
+  else if(evTab==="pains")body=painsView(pick("pains"),false,false);
+  else if(evTab==="leads")body=leadsView(pick("companies"),false);
+  else if(evTab==="people")body=peopleView(pick("people"),false);
+  else body=evFiles.length?`<div class="tbl"><table><thead><tr><th>文件</th><th>上传人</th><th>时间</th><th></th></tr></thead><tbody>${evFiles.slice().sort((a,b)=>(a.uploadedAt||0)-(b.uploadedAt||0)).map(f=>`<tr><td><span class="ftype">${esc(f.ext||"")}</span> <span class="fn">${esc(f.name)}</span>${f.note?`<div class="note">${esc(f.note)}</div>`:""}</td><td>${esc(nameOf(f.uploadedBy))}</td><td class="mono">${fmtTime(f.uploadedAt)}</td><td style="white-space:nowrap">${f.assetId?`<a class="btn ghost" href="/_blob/${esc(f.assetId)}" target="_blank" rel="noopener">打开</a>`:""}${f.textAssetId?`<a class="btn ghost" href="/_blob/${esc(f.textAssetId)}" target="_blank" rel="noopener">文字</a>`:""}</td></tr>`).join("")}</tbody></table></div>`:`<p class="note">没有原始笔记。</p>`;
+  return `<div class="wrap">
+    <div class="dh"><button class="btn ghost back" id="evBack">← 会议列表</button>
+      <div class="dh-top"><h2>${esc(e.name||"未命名会议")}</h2><div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${canWrite?`<button class="btn" id="evEdit">编辑信息</button>`:""}
+        ${canWrite&&sample?`<button class="btn" id="evRedo" ${evBusy.redo?"disabled":""}>${evBusy.redo?"提取中…":"重新提取"}</button>`:""}</div></div>
+      <div class="tags">${e.type?`<span class="pill tag">${esc(e.type)}</span>`:""}${evDate(e)?`<span class="pill tag mono">${esc(evDate(e))}</span>`:""}${e.location?`<span class="pill tag">${esc(e.location)}</span>`:""}
+        <span class="stamp">${esc(nameOf(e.createdBy))} 录入 · 最近更新 ${rel(e.updatedAt)}（${esc(nameOf(e.updatedBy))}）</span></div>
+    </div>
+    <div class="tabs" role="tablist">${T.map(([k,l,n])=>`<button class="tab" role="tab" data-etab="${k}" aria-selected="${evTab===k}">${l}${n?`<span class="n">${n}</span>`:""}</button>`).join("")}</div>
+    <section>${body}</section></div>`;
+}
+
+/* ---- extraction ---- */
+function evPrompt(texts){
+  return `你是一支美元早期风投基金的行业研究员。${FUND}\n下面是 GP 参加会议、峰会或闭门会时记的笔记（可能零散、中英混杂、有缩写；也可能附有现场照片）。请提取结构化信息，用于早期行业投研。\n要求：\n1. 只根据笔记和照片内容，不要编造；没有的字段留空字符串。人名、公司名保持原文写法。\n2. 中文为主。${TERM_RULE()}\n3. 行业痛点 (pain points) 是重点：尽量提全，每条要具体——谁在痛、在哪个环节、因为什么、造成什么损失，不要写成空泛口号；能对应到原话的给出 quote。severity 1–5 按笔记体现的紧迫程度和普遍程度打分。opportunity 写「什么样的公司可以解决、值得投」。\n4. sector 优先从这些里选：${SECTORS.join("、")}；都不合适时可以自拟简短的行业名。同一行业的写法要统一。\n5. 公司线索的 fit 是与我们基金投资方向的匹配度：高 / 中 / 低，并用一句话说明理由。\n只输出一个 JSON 对象：\n{"event":{"name":"会议名称","date":"YYYY-MM-DD，没有就空","location":"","type":"${EV_TYPES.join("|")}"},"summary":"3–8 条会议核心要点，每条以「- 」开头，用换行分隔","themes":["反复出现的主题，3–6 个短语"],"pains":[{"sector":"","pain":"一句话痛点","who":"谁在痛（角色或机构类型）","detail":"具体表现与原因","quote":"原话，没有就空","speaker":"谁提到的，没有就空","severity":3,"current":"现在怎么凑合解决","opportunity":"投资机会"}],"companies":[{"name":"","sector":"","what":"大白话一句话说清在做什么","stage":"","signals":"笔记中提到的进展、融资、客户等信号","website":"","fit":"高|中|低","fitReason":""}],"people":[{"name":"","title":"","org":"","role":"演讲嘉宾|圆桌嘉宾|创始人|投资人|企业高管|学者|其他","takeaways":"核心观点","followUp":"值得跟进的点，没有就空"}]}\n\n=== 会议笔记 ===${texts||"\n（只有照片）"}`;
+}
+function cleanArr(a,keys){return Array.isArray(a)?a.filter(x=>x&&typeof x==="object").map(x=>{const o={};for(const k of keys)o[k]=k==="severity"?Math.max(0,Math.min(5,Math.round(Number(x[k])||0))):(typeof x[k]==="string"?x[k].slice(0,1200):"");return o}).filter(o=>Object.values(o).some(v=>v)):[]}
+function extractionFields(r){
+  return {summary:typeof r.summary==="string"?r.summary:"",themes:Array.isArray(r.themes)?r.themes.filter(t=>typeof t==="string").slice(0,8):[],
+    pains:cleanArr(r.pains,["sector","pain","who","detail","quote","speaker","severity","current","opportunity"]).filter(p=>p.pain),
+    companies:cleanArr(r.companies,["name","sector","what","stage","signals","website","fit","fitReason"]).filter(c=>c.name),
+    people:cleanArr(r.people,["name","title","org","role","takeaways","followUp"]).filter(p=>p.name)};
+}
+async function runEvExtract(texts,images){
+  const opts={modelTier:"complex"};
+  if(images&&images.length){try{const lim=(await sample.limits()).images;if(lim){opts.images=images.filter(f=>(!lim.maxInputBytes||f.size<=lim.maxInputBytes)&&(!lim.mediaTypes||!f.type||lim.mediaTypes.includes(f.type))).slice(0,lim.maxCount||4)}}catch(e){}}
+  const r=await sample.json(evPrompt(texts),opts);
+  if(!r||typeof r!=="object")throw{code:"invalid_json"};
+  return r;
+}
+const IMG=new Set(["png","jpg","jpeg","webp","gif"]);
+function addEvFiles(list){const seen=new Set(evIntake.files.map(f=>f.name+f.size));for(const f of list){if(!seen.has(f.name+f.size))evIntake.files.push(f)}evOpen=true;renderMain()}
+async function runEvIntake(){
+  if(evIntake.running)return;
+  const notes=($("#evNotes")?.value||"").trim();
+  if(!evIntake.files.length&&!notes){toast("先添加文件，或粘贴会议笔记");return}
+  evIntake.running=true;
+  const steps=evIntake.steps=[{k:"ex",label:"读取笔记",state:"on"},{k:"ai",label:"提取人物、公司和行业痛点",state:""},{k:"save",label:"归档",state:""}];
+  const S=(k,state,detail)=>{const s=steps.find(x=>x.k===k);s.state=state;s.detail=detail||"";if(mode==="events"&&!evSel)renderMain()};
+  renderMain();
+  const preps=[];
+  for(const f of evIntake.files){S("ex","on",f.name);preps.push(await prepFile(f,m=>S("ex","on",`${f.name} · ${m}`)))}
+  if(notes)preps.push({name:"会议笔记（粘贴）.txt",ext:"txt",size:notes.length,text:notes,file:null});
+  const imgs=preps.filter(p=>p.file&&IMG.has(p.ext)).map(p=>p.file);
+  const texts=packTexts(preps,200000);
+  S("ex","done",`${preps.length} 份材料${imgs.length?`，含 ${imgs.length} 张照片`:""}`);
+  let r=null;
+  if(sample&&(texts.trim()||imgs.length)){
+    S("ai","on","通常需要 1–2 分钟");
+    try{r=await runEvExtract(texts,imgs);S("ai","done")}catch(e){console.warn(e);S("ai","fail",errCopy(e)+"，归档后可点「重新提取」")}
+  }else S("ai","skip",sample?"没有可读的内容":"AI 在当前视图不可用");
+  S("save","on");
+  try{
+    const ref=db.collection("events").doc();const ev=r?.event||{};
+    const base={name:String(ev.name||"").trim()||guessName(preps).replace(/^新项目/,"会议"),date:/^\d{4}-\d{2}-\d{2}$/.test(ev.date||"")?ev.date:"",location:String(ev.location||""),type:EV_TYPES.includes(ev.type)?ev.type:"",
+      summary:"",themes:[],pains:[],companies:[],people:[],createdBy:me.id||"",createdAt:now(),updatedBy:me.id||"",updatedAt:now(),...(r?{...extractionFields(r),extractedAt:now()}:{})};
+    await ref.set(base);
+    for(const p of preps){S("save","on",p.name);try{await storePrep(ref.id,p,null,"events")}catch(e){console.warn(e);toast(`${p.name} 保存失败`)}}
+    evIntake={files:[],running:false,steps:[]};evOpen=false;
+    selectEvent(ref.id);
+    toast(r?`已归档：${base.pains.length} 条痛点、${base.companies.length} 家公司、${base.people.length} 位人物`:"已归档。可以在会议页点「重新提取」");
+  }catch(e){S("save","fail");evIntake.running=false;writeErr(e);renderMain()}
+}
+async function redoEvent(e){
+  if(!sample||evBusy.redo)return;evBusy.redo=true;renderMain();
+  try{
+    const list=[];const imgs=[];
+    for(const f of evFiles.slice().sort((a,b)=>(a.uploadedAt||0)-(b.uploadedAt||0))){
+      if(f.textAssetId)list.push({name:f.name,text:await getText(f.textAssetId)});
+      else if(f.assetId&&IMG.has(f.ext)){try{imgs.push(await(await fetch("/_blob/"+f.assetId)).blob())}catch(x){}}
+    }
+    const r=await runEvExtract(packTexts(list,200000),imgs);
+    await db.doc("events/"+e.id).update({...extractionFields(r),extractedAt:now(),updatedAt:now(),updatedBy:me.id||""});
+    toast("已重新提取");
+  }catch(x){console.warn(x);toast(errCopy(x))}
+  evBusy.redo=false;renderMain();
+}
+async function genInsight(sector){
+  if(!sample||evBusy["ins:"+sector])return;
+  const ps=allItems("pains").filter(p=>(p.sector||"其他")===sector);if(!ps.length)return;
+  evBusy["ins:"+sector]=true;renderMain();
+  try{
+    const lines=ps.map(p=>`- [${p._ev.name||""} ${evDate(p._ev)}] 痛点：${p.pain}｜谁：${p.who}｜表现：${p.detail}｜原话：${p.quote}｜现有方案：${p.current}｜机会：${p.opportunity}｜紧迫度 ${p.severity}`).join("\n");
+    const {text}=await sample(`你是一支美元早期风投基金的行业研究负责人。${FUND}\n下面是我们在多场会议中收集到的「${sector}」行业痛点。请跨会议归纳，写一份简明的行业洞察，帮助 GP 判断这个行业值得投什么。\n中文为主。${TERM_RULE()}\n结构（每部分用「- 」列表，总长不超过 600 字）：\n### 共性痛点（按出现频次和紧迫度排序，注明被几场会议提到）\n### 被忽视或新出现的痛点\n### 现有解决方案的缺口\n### 值得寻找的公司画像（3 条以内，具体到产品形态和客户）\n### 下一步投研问题\n只根据下面的材料，不要编造数据。\n\n${lines}`,{modelTier:"complex",cache:false});
+    await db.doc("research/"+hashId(sector)).set({sector,text,n:ps.length,by:me.id||"",at:now()});
+  }catch(x){console.warn(x);toast(errCopy(x))}
+  evBusy["ins:"+sector]=false;renderMain();
+}
+async function delItem(evId,kind,idx){
+  const e=events.find(x=>x.id===evId);if(!e)return;const arr=(e[kind]||[]).slice();arr.splice(idx,1);
+  try{await db.doc("events/"+evId).update({[kind]:arr,updatedAt:now(),updatedBy:me.id||""})}catch(x){writeErr(x)}
+}
+async function leadToDeal(evId,idx){
+  const e=events.find(x=>x.id===evId);const c=e?.companies?.[idx];if(!c)return;
+  try{
+    const ref=db.collection("deals").doc();
+    await ref.set({name:c.name,oneLiner:c.what||"",sector:c.sector||"",stage:c.stage||"",website:c.website||"",status:"new",scores:{},memo:{},round:{},
+      sourceEvent:{id:e.id,name:e.name||""},createdBy:me.id||"",createdAt:now(),updatedBy:me.id||"",updatedAt:now()});
+    await logH(ref.id,"从会议线索创建",`${e.name||""}${c.signals?"：" + c.signals.slice(0,60):""}`);
+    const arr=e.companies.slice();arr[idx]={...c,dealId:ref.id};
+    await db.doc("events/"+e.id).update({companies:arr,updatedAt:now(),updatedBy:me.id||""});
+    toast(`已加入项目库：${c.name}`);
+  }catch(x){writeErr(x)}
+}
+function openEvDialog(e){
+  const scrim=document.createElement("div");scrim.className="scrim";
+  scrim.innerHTML=`<form class="dlg" id="evForm"><h3>编辑会议信息</h3><div class="fgrid">
+    <label class="fld wide">会议名称<input id="ev_name" value="${esc(e.name||"")}"></label>
+    <label class="fld">日期<input id="ev_date" type="date" value="${esc(e.date||"")}"></label>
+    <label class="fld">类型<select id="ev_type"><option value="">—</option>${EV_TYPES.map(t=>`<option${e.type===t?" selected":""}>${t}</option>`).join("")}</select></label>
+    <label class="fld wide">地点<input id="ev_loc" value="${esc(e.location||"")}"></label>
+    <label class="fld wide">会议要点（每行「- 」开头）<textarea id="ev_sum" style="min-height:140px">${esc(e.summary||"")}</textarea></label>
+  </div><div class="acts"><button type="button" class="btn ghost" id="evCancel">取消</button><button class="btn pri" type="submit">保存</button></div></form>`;
+  document.body.append(scrim);
+  const close=()=>scrim.remove();scrim.addEventListener("click",x=>{if(x.target===scrim)close()});$("#evCancel").onclick=close;
+  $("#evForm").addEventListener("submit",async x=>{x.preventDefault();const v=id=>($("#"+id).value||"").trim();
+    try{await db.doc("events/"+e.id).update({name:v("ev_name"),date:v("ev_date"),type:v("ev_type"),location:v("ev_loc"),summary:$("#ev_sum").value,updatedAt:now(),updatedBy:me.id||""});close();toast("已保存")}catch(err){writeErr(err)}});
+}
+function selectEvent(id){
+  evSel=id;evTab="summary";evFiles=[];if(evUnsub){evUnsub();evUnsub=null}
+  if(id&&db)evUnsub=db.doc("events/"+id).collection("files").onSnapshot(s=>{evFiles=s.docs.map(x=>({id:x.id,...x.data()}));refreshProfiles(evFiles.map(f=>f.uploadedBy));if(evSel===id&&mode==="events")render()},x=>console.warn(x));
+  render();
+}
+function setMode(m){mode=m;view="deals";document.querySelectorAll("[data-mode]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.mode===m)));
+  $("#newDeal").textContent=m==="events"?"＋ 录入会议笔记":"＋ 新建项目";$("#q").placeholder=m==="events"?"搜索会议、主题…":"搜索公司、赛道、创始人…";
+  try{localStorage.setItem("dr.mode",m)}catch(e){}render()}
+
+/* ================= Events ================= */
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("button,a");if(!t)return;
+  if(t.dataset.f){filter=t.dataset.f;renderList();return}
+  if(t.dataset.mode){setMode(t.dataset.mode);return}
+  if(t.dataset.ev){if(mode!=="events"){mode="events";setMode("events")}view="deals";selectEvent(t.dataset.ev);return}
+  if(t.id==="evBack"){evSel=null;evOpen=false;if(evUnsub){evUnsub();evUnsub=null}render();return}
+  if(t.dataset.etab){evTab=t.dataset.etab;renderMain();return}
+  if(t.dataset.rtab){resTab=t.dataset.rtab;renderMain();return}
+  if(t.dataset.sec!==undefined){resSector=t.dataset.sec;renderMain();return}
+  if(t.id==="evPick"){pickTarget="ev";$("#fileInput").click();return}
+  if(t.id==="evGo"){runEvIntake();return}
+  if(t.dataset.rmev){evIntake.files.splice(+t.dataset.rmev,1);renderMain();return}
+  if(t.dataset.insight){genInsight(t.dataset.insight);return}
+  if(t.dataset.delitem){const[a,b,c]=t.dataset.delitem.split("|");if(t.dataset.armed!=="1"){t.dataset.armed="1";t.textContent="确认";setTimeout(()=>{if(t.isConnected){t.dataset.armed="";t.textContent="×"}},3000);return}delItem(a,b,+c);return}
+  if(t.dataset.todeal){const[a,b]=t.dataset.todeal.split("|");t.disabled=true;leadToDeal(a,+b);return}
+  if(t.id==="evEdit"){const ev=events.find(x=>x.id===evSel);if(ev)openEvDialog(ev);return}
+  if(t.id==="evRedo"){const ev=events.find(x=>x.id===evSel);if(ev){if(t.dataset.armed!=="1"){t.dataset.armed="1";t.textContent="将覆盖已提取内容，再次点击确认";setTimeout(()=>{if(t.isConnected){t.dataset.armed="";t.textContent="重新提取"}},4000);return}redoEvent(ev)}return}
+  if(t.dataset.id){if(mode!=="deals")setMode("deals");if(view!=="deals"){view="deals";if(sel===t.dataset.id){render();return}}selectDeal(t.dataset.id);return}
+  if(t.id==="openGloss"){view="glossary";render();return}
+  if(t.id==="glossBack"){view="deals";render();return}
+  if(t.dataset.gedit!==undefined){openGlossDialog(t.dataset.gedit?gloss.find(g=>g.id===t.dataset.gedit):null);return}
+  if(t.id==="newDeal"&&mode==="events"){view="deals";evSel=null;evOpen=true;if(evUnsub){evUnsub();evUnsub=null}render();$("#evNotes")?.focus();return}
+  if(t.id==="newDeal"){view="deals";if(!canWrite){toast("你没有新建权限");return}if(!db){toast("项目库还没连接上");return}
+    sel=null;intakeOpen=true;try{localStorage.setItem("dr.sel","")}catch(e){}unsubSub.forEach(u=>u());unsubSub=[];render();$("#intakeNotes")?.focus();return}
+  if(t.id==="manualNew"){openDialog(null);return}
+  if(t.id==="intakePick"){pickTarget="intake";$("#fileInput").click();return}
+  if(t.id==="intakeGo"){runIntake();return}
+  if(t.dataset.rmf){intake.files.splice(+t.dataset.rmf,1);renderMain();return}
+  if(t.id==="back"){view="deals";sel=null;intakeOpen=false;try{localStorage.setItem("dr.sel","")}catch(e){}unsubSub.forEach(u=>u());unsubSub=[];render();return}
+  if(t.dataset.tab){tab=t.dataset.tab;editing=null;renderMain();if(tab==="chat")$("#askBox")?.focus();return}
+  const d=deals.find(x=>x.id===sel);
+  if(t.id==="editBasics"&&d){openDialog(d);return}
+  if(t.dataset.edit){editing=t.dataset.edit;renderMain();$("#edText")?.focus();return}
+  if(t.dataset.cancel){editing=null;renderMain();return}
+  if(t.dataset.save&&d){const k=t.dataset.save,v=$("#edText").value;t.disabled=true;
+    try{await touch(d.id,{memo:{[k]:v},memoMeta:{[k]:{by:me.id||"",at:now()}}});await logH(d.id,"编辑 Memo",SECTIONS.find(s=>s.k===k).t);editing=null;renderMain()}catch(err){t.disabled=false;writeErr(err)}return}
+  if(t.id==="aiAnalyze"&&d){
+    const has=SECTIONS.some(s=>d.memo?.[s.k]);
+    if(has&&t.dataset.armed!=="1"){t.dataset.armed="1";t.textContent="将覆盖现有备忘录，再次点击确认";setTimeout(()=>{if(t.isConnected){t.dataset.armed="";t.textContent="重新生成分析"}},4000);return}
+    analyze(d);return}
+  if(t.id==="pick"){pickTarget="deal";$("#fileInput").click();return}
+  if(t.id==="sendChat"){const b=$("#askBox");const v=b.value;b.value="";sendChat(v);return}
+  if(t.id==="stopChat"){chatCtl?.abort();return}
+  if(t.dataset.sug){sendChat(t.dataset.sug);return}
+  if(t.dataset.savechat&&d){const m=(chats.get(d.id)||[])[+t.dataset.savechat];const q=(chats.get(d.id)||[])[+t.dataset.savechat-1];if(!m)return;t.disabled=true;
+    try{await dealRef(d.id).collection("comments").add({text:(q?`**问：**${q.content}\n\n`:"")+m.content,fromChat:true,by:me.id||"",at:now()});await touch(d.id);await logH(d.id,"保存 AI 对话到讨论",(q?.content||"").slice(0,40));t.textContent="已保存"}catch(err){t.disabled=false;writeErr(err)}return}
+  if(t.id==="postC"&&d){const b=$("#cBox");const v=b.value.trim();if(!v)return;t.disabled=true;
+    try{await dealRef(d.id).collection("comments").add({text:v,by:me.id||"",at:now()});await touch(d.id);await logH(d.id,"发表讨论",v.slice(0,40));b.value=""}catch(err){writeErr(err)}t.disabled=false;return}
+});
+document.addEventListener("change",async e=>{
+  if(e.target.id==="status"){const d=deals.find(x=>x.id===sel);if(!d)return;const from=STATUS[d.status||"new"],to=e.target.value;
+    try{await touch(d.id,{status:to});await logH(d.id,"修改状态",`${from} → ${STATUS[to]}`)}catch(err){writeErr(err)}}
+  if(e.target.id==="fileInput"){const fl=[...e.target.files];e.target.value="";if(pickTarget==="intake")addIntakeFiles(fl);else if(pickTarget==="ev")addEvFiles(fl);else uploadFiles(fl)}
+});
+document.addEventListener("keydown",e=>{if(e.target.id==="askBox"&&e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();const v=e.target.value;e.target.value="";sendChat(v)}});
+$("#q").addEventListener("input",e=>{query=e.target.value;renderList()});
+document.addEventListener("input",e=>{if(e.target.id==="rq"){rq=e.target.value;const b=$("#rBody");if(b){const pos=e.target.selectionStart;renderMain();const r=$("#rq");if(r){r.focus();try{r.setSelectionRange(pos,pos)}catch(x){}}}return}if(e.target.id==="gq"){gq=e.target.value;const tb=$("#gRows");if(tb)tb.innerHTML=glossRows()}});
+const dropZone=e=>e.target.closest?.("#drop,#intakeDrop,#evDrop");
+document.addEventListener("dragover",e=>{const z=dropZone(e);if(z&&!intake.running){e.preventDefault();z.classList.add("over")}});
+document.addEventListener("dragleave",e=>{const z=dropZone(e);if(z&&!z.contains(e.relatedTarget))z.classList.remove("over")});
+document.addEventListener("drop",e=>{const z=dropZone(e);if(!z)return;e.preventDefault();z.classList.remove("over");const fl=[...e.dataTransfer.files];if(!fl.length)return;
+  if(z.id==="intakeDrop"){if(!intake.running)addIntakeFiles(fl)}else if(z.id==="evDrop"){if(!evIntake.running)addEvFiles(fl)}else uploadFiles(fl)});
+
+/* ================= Boot ================= */
+render();
+(async()=>{
+  const c=window.claude;
+  if(!c||!c.use){$("#list").innerHTML=`<p class="note" style="padding:16px">请在 claude.ai 中打开这个页面。</p>`;return}
+  [db,user,assets,sample]=await Promise.all(["db","user","assets","sample"].map(n=>c.use(n).catch(()=>null)));
+  if(user){try{const v=await user.me();me={id:v.id};if(v.id){names.set(v.id,v.name||"我");avatars.set(v.id,v.avatarUrl)}}catch(e){}
+    try{const w=await user.can("data.write");if(w===false)canWrite=false}catch(e){}}
+  if(!db){$("#list").innerHTML=`<p class="note" style="padding:16px">项目库需要登录 claude.ai 后才能查看。</p>`;canWrite=false;renderMain();return}
+  let last="";try{last=localStorage.getItem("dr.sel")||""}catch(e){}
+  let first=true;
+  db.collection("glossary").onSnapshot(s=>{
+    indexGloss(s.docs.map(x=>({id:x.id,...x.data()})));
+    const c=$("#gCount");if(c)c.textContent=gloss.length||"";
+    if(view==="glossary"){const tb=$("#gRows");if(tb)tb.innerHTML=glossRows();else renderMain()}
+    if(tipFor)tip.innerHTML=tipHTML(tipFor);
+  },e=>console.warn("glossary",e));
+  db.collection("events").onSnapshot(s=>{
+    events=s.docs.map(x=>({id:x.id,...x.data()}));
+    refreshProfiles(events.flatMap(e=>[e.createdBy,e.updatedBy]));
+    if(evSel&&!events.some(e=>e.id===evSel))evSel=null;
+    if(mode==="events")render();
+  },e=>console.warn("events",e));
+  db.collection("research").onSnapshot(s=>{research.clear();s.docs.forEach(x=>research.set(x.id,x.data()));if(mode==="events"&&!evSel)renderMain()},e=>console.warn("research",e));
+  try{if(localStorage.getItem("dr.mode")==="events")setMode("events")}catch(e){}
+  db.collection("deals").onSnapshot(s=>{
+    deals=s.docs.map(x=>({id:x.id,...x.data()}));
+    refreshProfiles(deals.flatMap(d=>[d.updatedBy,d.createdBy,...Object.values(d.memoMeta||{}).map(m=>m.by)]));
+    if(first){first=false;if(last&&deals.some(d=>d.id===last)&&window.innerWidth>820){selectDeal(last);return}}
+    if(sel&&!deals.some(d=>d.id===sel)){sel=null}
+    if(editing&&tab==="memo"){renderList();return}
+    if(busy.chat&&tab==="chat"){renderList();return}
+    if(mode==="events"){if(!evSel)renderMain();return}
+    render();
+  },e=>{$("#list").innerHTML=`<p class="note" style="padding:16px">项目库暂时连不上，请刷新页面。</p>`});
+})();
+</script>
