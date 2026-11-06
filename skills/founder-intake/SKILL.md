@@ -20,22 +20,24 @@ Deal Room：https://claude.ai/artifact/Mfhejvv4zgczHj5yGWcBU7（slug `a75e169d-6
 ## 工作流程
 
 1. **找新提交**：用 Google Drive 搜索标题为 `submission.json` 的文件（可限定最近 14 天修改过），逐个用 `read_file_content` 读取。
-   - 只处理 `status: "submitted"` 的记录。`uploading` 表示 founder 还没传完（超过 1 天仍是 `uploading` 的，在回复里提一句即可）。
+   - 只处理 `status: "submitted"` 的记录。`uploading` 表示 founder 拖入了文件但还没点提交；超过 1 天仍是 `uploading` 的，在回复里列出（文件夹名带「(in progress)」），不建档。
+   - 只有 `submission.name` 一定有值，其余字段都可能为空：公司名为空时，从材料中识别。
 2. **去重**：用 Deal Room `db_query` 查 `deals` 中 `intake.submissionId == <id>` 的文档。已存在就跳过。
    - 同一家公司可能已经从其他渠道（微信、会议）建过档：按公司名 slug 查 `deals/<slug>`。若已存在，就**合并**进去（补 `intake`、追加文件、记历史），不要新建重复项目。
 3. **读资料**：对 `files[]` 里每个文件，用 Drive `read_file_content(fileId)` 取文字。
    - `kind: "nda"` 的文件**不参与业务分析**：只登记，并在 memo 的 `next` 一节加一条「Founder 要求我方签署 NDA（见资料），待 Charles 审阅」。
    - 读不出文字的文件（扫描件、图片），在文件的 `note` 里写明。
-4. **分析**：加载 `deal-screener` 技能，按它的框架、来源标签和联网核实流程分析。表单字段（一句话介绍、赛道、轮次、融资额、所在地、founder 补充说明）只能算【BP自述】。
+4. **分析**：加载 `deal-screener` 技能，按它的框架、来源标签和联网核实流程分析。表单字段（一句话介绍、赛道、轮次、融资额、所在地、founder 补充说明）只能算【BP自述】。`submission.autofilled` 里列出的字段是页面从材料中自动预填、founder 没改过的，可信度更低：和材料核对，不一致时以材料为准。
 5. **写入 Deal Room**：按 deal-screener 的字段写，另外加：
    - `source: "portal"`
-   - `intake: {submissionId, submittedAt(毫秒), driveFolderUrl, contact:{name, role, email, im}, referrer, location, consentShare, notes}`
+   - `intake: {submissionId, submittedAt(毫秒), driveFolderUrl, contact:{name, role, email, im}, referrer, location, consentShare, notes, autofilled}`
    - 每个文件在 `deals/<id>/files` 下加一条：`{name, ext, size, note: <kindLabel>, driveUrl: <url>, uploadedBy: "founder", uploadedAt}`
    - `history` 加一条 `{action: "Founder 提交", detail: "<id> · N 个文件 · 介绍人 X", by: "agent", at}`，分析完成后再按 deal-screener 规则加「Claude 联网分析」。
 6. **回复 Sonya**（或定时运行时用 SendUserMessage）：每个新项目一行：公司 · 赛道/轮次 · 建议 (Pass/Track/Deep Dive) · 一句话理由。另外单独列出：
    - 需要签 NDA 的项目
    - `consentShare = false` 的项目（推荐给投资人前必须先征询 founder）
    - 处理失败或文件读不出的项目
+   - 没留邮箱的 founder（需要通过微信、WhatsApp 或介绍人联系）
 
 ## 规则
 - 不改 Drive 里的任何文件（`submission.json` 也不改）。是否处理过，以 Deal Room 里有没有对应的 `intake.submissionId` 为准。

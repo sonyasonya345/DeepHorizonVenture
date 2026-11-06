@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Founder intake portal — same palette as the internal Deal Room */
+/* Founder intake portal — drop first, details auto-filled from the materials. Same palette as the internal Deal Room. */
 :root{
   --bg:#F2F4F3; --surface:#FFFFFF; --sunk:#E9EDEB; --ink:#14201C; --muted:#5A6762; --line:#D9E0DC;
   --accent:#1F5E4F; --accent-ink:#FFFFFF; --accent-soft:#E1EDE8;
-  --good:#2E7D4F; --bad:#B0412B; --good-soft:#E3F1E8; --bad-soft:#F6E3DE;
+  --good:#2E7D4F; --bad:#B0412B; --info:#2C5A97; --good-soft:#E3F1E8; --bad-soft:#F6E3DE; --info-soft:#E2EAF5;
   --f-display:"Noto Serif SC","Songti SC",Georgia,serif;
   --f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
@@ -22,7 +22,7 @@
 @media (prefers-color-scheme: dark){:root{
   --bg:#0E1412; --surface:#151D1A; --sunk:#111816; --ink:#E4EBE8; --muted:#94A39D; --line:#26312D;
   --accent:#72C2A8; --accent-ink:#0E1412; --accent-soft:#1B2E28;
-  --good:#6CC08E; --bad:#E58B76; --good-soft:#18291F; --bad-soft:#2E1B17; color-scheme:dark}}
+  --good:#6CC08E; --bad:#E58B76; --info:#86AEE6; --good-soft:#18291F; --bad-soft:#2E1B17; --info-soft:#18233A; color-scheme:dark}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
@@ -30,10 +30,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
-.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ---------- top bar ---------- */
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px max(20px,env(safe-area-inset-left)) 16px max(20px,env(safe-area-inset-right));border-bottom:1px solid var(--line);background:var(--surface)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px max(20px,env(safe-area-inset-left)) 14px max(20px,env(safe-area-inset-right));border-bottom:1px solid var(--line);background:var(--surface)}
 .mark{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:.02em}
 .mark svg{flex:none}
 .lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
@@ -41,10 +40,10 @@ button{cursor:pointer}
 .lang button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
 
 /* ---------- layout ---------- */
-.page{max-width:1120px;margin:0 auto;padding:40px 20px 80px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:start}
+.page{max-width:1120px;margin:0 auto;padding:40px 20px 80px;display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:56px;align-items:start}
 .intro{position:sticky;top:32px}
 .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
-.intro h1{font-family:var(--f-display);font-size:34px;line-height:1.25;margin:10px 0 14px;letter-spacing:.01em}
+.intro h1{font-family:var(--f-display);font-size:32px;line-height:1.25;margin:10px 0 14px;letter-spacing:.01em}
 .intro p.lede{color:var(--muted);margin:0 0 28px;max-width:40ch}
 .steps{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 .steps li{display:grid;grid-template-columns:32px 1fr;gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--line)}
@@ -54,83 +53,99 @@ button{cursor:pointer}
 .fine{color:var(--muted);font-size:12.5px;margin-top:20px}
 
 /* ---------- form ---------- */
-form{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 28px 28px}
-fieldset{border:0;margin:0;padding:22px 0 6px;border-bottom:1px solid var(--line)}
-fieldset:last-of-type{border-bottom:0}
-legend{float:left;width:100%;font-family:var(--f-display);font-weight:700;font-size:17px;padding:0;margin-bottom:14px;display:flex;gap:10px;align-items:baseline}
-legend+*{clear:both}
-legend .k{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weight:500}
+form{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 28px 28px}
+.sec{padding:22px 0 6px;border-top:1px solid var(--line);margin-top:22px}
+.sec-h{display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap;margin:0 0 14px}
+.sec-h h2{font-family:var(--f-display);font-weight:700;font-size:17px;margin:0;display:flex;gap:10px;align-items:baseline}
+.sec-h .k{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weight:500}
+.sec-h .sub{color:var(--muted);font-size:12.5px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
 .fld{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:500;min-width:0}
 .fld.wide{grid-column:1/-1}
-.fld .opt{color:var(--muted);font-weight:400}
-.fld input,.fld select,.fld textarea{width:100%;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);padding:9px 11px;font-size:15px;font-weight:400}
-.fld textarea{min-height:88px;resize:vertical}
+.fld .lab{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fld .req{color:var(--bad)}
+.fld input,.fld select,.fld textarea{width:100%;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);padding:9px 11px;font-size:15px;font-weight:400;transition:background .4s,border-color .2s}
+.fld textarea{min-height:84px;resize:vertical}
 .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.fld.err input,.fld.err select{border-color:var(--bad)}
-.fld .msg{color:var(--bad);font-size:12px;font-weight:400;min-height:0}
+.fld.auto input,.fld.auto select,.fld.auto textarea{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 35%,var(--line))}
+.badge{display:none;font-family:var(--f-mono);font-size:10.5px;font-weight:500;letter-spacing:.04em;color:var(--info);background:var(--info-soft);border-radius:4px;padding:0 5px;line-height:17px}
+.fld.auto .badge{display:inline-block}
+.fld.err input{border-color:var(--bad)}
+.fld .msg{color:var(--bad);font-size:12px;font-weight:400}
+.fld .msg:empty{display:none}
 .hp{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
 
-/* ---------- dropzone ---------- */
-.drop{position:relative;border:1.5px dashed var(--line);border-radius:12px;background:var(--bg);padding:30px 20px;text-align:center;transition:border-color .15s,background .15s}
+/* ---------- dropzone (first thing on the form) ---------- */
+.drop{position:relative;border:1.5px dashed color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:12px;background:var(--bg);padding:44px 20px;text-align:center;transition:border-color .15s,background .15s,padding .2s}
 .drop.over{border-color:var(--accent);background:var(--accent-soft)}
-.drop.err{border-color:var(--bad)}
+.drop.compact{padding:18px 20px}
+.drop.compact .big,.drop [hidden]{display:none}
 .drop svg{color:var(--accent)}
-.drop strong{display:block;font-size:15.5px;margin:8px 0 2px}
-.drop .hint{color:var(--muted);font-size:13px}
+.drop strong{display:block;font-family:var(--f-display);font-size:21px;margin:10px 0 4px}
+.drop.compact strong{font-family:var(--f-body);font-size:14.5px;margin:0}
+.drop .hint{color:var(--muted);font-size:13px;display:block}
 .drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
-.btn-browse{display:inline-block;margin-top:12px;border:1px solid var(--ink);border-radius:999px;padding:5px 16px;font-size:13px;font-weight:500;pointer-events:none}
+.btn-browse{display:inline-block;margin-top:14px;border:1px solid var(--ink);border-radius:999px;padding:6px 18px;font-size:13px;font-weight:500;pointer-events:none}
 .files{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
-.file{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:10px;border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;background:var(--surface)}
+.files:empty{display:none}
+.file{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:4px 10px;border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;background:var(--surface)}
 .file .ext{font-family:var(--f-mono);font-size:10.5px;font-weight:500;text-transform:uppercase;background:var(--sunk);color:var(--muted);border-radius:4px;padding:2px 6px;min-width:42px;text-align:center}
-.file .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.file .nm{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
 .file .sz{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);display:block}
-.file select{border:1px solid var(--line);border-radius:6px;background:var(--bg);padding:4px 6px;font-size:13px;max-width:150px}
+.file.done .sz::after{content:" · ✓";color:var(--good)}
+.file.fail .sz{color:var(--bad)}
+.file select{border:1px solid var(--line);border-radius:6px;background:var(--bg);padding:4px 6px;font-size:13px;max-width:160px}
 .file .rm{border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;padding:2px 6px;border-radius:6px}
 .file .rm:hover{background:var(--sunk);color:var(--ink)}
-.file .bar{grid-column:1/-1;height:3px;background:var(--sunk);border-radius:2px;overflow:hidden;display:none}
+.file .bar{grid-column:1/-1;height:3px;background:var(--sunk);border-radius:2px;overflow:hidden}
+.file.done .bar{display:none}
 .file .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
-.sending .file .bar{display:block}
-.file.done .bar i{background:var(--good)}
 .file.fail .bar i{background:var(--bad);width:100%!important}
 .dropmsg{color:var(--bad);font-size:12.5px;margin-top:8px}
+.dropmsg:empty{display:none}
+.status{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:13px;color:var(--muted);min-height:20px}
+.status:empty{display:none}
+.status.ok{color:var(--info)}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
 
 /* ---------- consent + submit ---------- */
-.check{display:grid;grid-template-columns:20px 1fr;gap:10px;align-items:start;font-size:13.5px;margin:12px 0}
+.check{display:grid;grid-template-columns:20px 1fr;gap:10px;align-items:start;font-size:13.5px;margin:4px 0 0}
 .check input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--accent)}
 .check .sub{display:block;color:var(--muted);font-size:12.5px}
-.check.err span{color:var(--bad)}
 .submit{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:22px;flex-wrap:wrap}
-.submit .note{color:var(--muted);font-size:12.5px;max-width:42ch}
+.submit .note{color:var(--muted);font-size:12.5px;max-width:46ch}
 .go{border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;padding:12px 28px;font-size:15px}
 .go:disabled{opacity:.55;cursor:progress}
 .alert{border-radius:var(--r);padding:10px 14px;font-size:13.5px;margin-top:16px;background:var(--bad-soft);color:var(--bad)}
 .demo{border-radius:var(--r);padding:8px 12px;font-size:12.5px;margin:18px 0 0;background:var(--sunk);color:var(--muted)}
 
 /* ---------- done ---------- */
-.done{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:40px 32px;text-align:left}
-.done .tick{width:44px;height:44px;border-radius:50%;background:var(--good-soft);color:var(--good);display:grid;place-items:center}
-.done h2{font-family:var(--f-display);font-size:26px;margin:16px 0 8px}
-.done p{color:var(--muted);margin:0 0 12px}
+.thanks{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:40px 32px}
+.thanks .tick{width:44px;height:44px;border-radius:50%;background:var(--good-soft);color:var(--good);display:grid;place-items:center}
+.thanks h2{font-family:var(--f-display);font-size:26px;margin:16px 0 8px}
+.thanks p{color:var(--muted);margin:0 0 12px}
 .ref{display:inline-flex;gap:8px;align-items:baseline;background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:8px 12px;margin:8px 0 18px}
 .ref .mono{font-weight:500;color:var(--ink)}
-.cal{display:inline-block;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;padding:11px 24px;text-decoration:none}
-.again{border:0;background:none;color:var(--muted);text-decoration:underline;padding:0;margin-left:16px;font-size:13.5px}
+.cal{display:inline-block;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;padding:11px 24px;text-decoration:none;margin-right:16px}
+.again{border:0;background:none;color:var(--muted);text-decoration:underline;padding:0;font-size:13.5px}
 
 /* ---------- responsive ---------- */
 @media (max-width:880px){
-  .page{grid-template-columns:1fr;gap:28px;padding-top:28px}
+  .page{grid-template-columns:1fr;gap:20px;padding-top:24px}
   .intro{position:static}
-  .intro h1{font-size:27px}
-  .steps{display:none}
-  .intro .fine{display:none}
+  .intro h1{font-size:25px;margin-bottom:6px}
+  .intro p.lede{margin-bottom:0}
+  .steps,.intro .fine{display:none}
 }
 @media (max-width:560px){
-  form{padding:4px 16px 20px;border-radius:10px}
+  form{padding:16px 16px 20px;border-radius:10px}
   .grid{grid-template-columns:1fr}
+  .drop{padding:32px 16px}
   .file{grid-template-columns:auto minmax(0,1fr) auto}
   .file select{grid-column:2/4;grid-row:2;max-width:none;width:100%}
-  .done{padding:28px 20px}
+  .thanks{padding:28px 20px}
   .go{width:100%}
 }
 </style>
@@ -151,27 +166,41 @@ legend .k{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weig
   <section class="intro">
     <div class="eyebrow" data-i18n="eyebrow">Founder submissions</div>
     <h1 data-i18n="title">Share your company with us</h1>
-    <p class="lede" data-i18n="lede">One place for your deck, data room files and any documents you'd like us to review or sign. No more scattered email and chat threads.</p>
+    <p class="lede" data-i18n="lede">Drop your deck and any other documents. We'll read them and fill in the details for you.</p>
     <ol class="steps">
-      <li><span class="n">01</span><b data-i18n="s1">Submit</b><span class="d" data-i18n="s1d">Basic company info and your materials. Drag in as many files as you need.</span></li>
-      <li><span class="n">02</span><b data-i18n="s2">We review</b><span class="d" data-i18n="s2d">A partner reads everything and comes back to you, usually within 3 business days.</span></li>
-      <li><span class="n">03</span><b data-i18n="s3">Meet</b><span class="d" data-i18n="s3d">We set up a call to go deeper and discuss how we can help.</span></li>
+      <li><span class="n">01</span><b data-i18n="s1">Drop your materials</b><span class="d" data-i18n="s1d">Deck, BP, financials, NDA, anything you'd like us to see or sign.</span></li>
+      <li><span class="n">02</span><b data-i18n="s2">Check the details</b><span class="d" data-i18n="s2d">We pre-fill company info from your files. Fix anything that's off and add your name.</span></li>
+      <li><span class="n">03</span><b data-i18n="s3">We get back to you</b><span class="d" data-i18n="s3d">A partner reviews everything, usually within 3 business days, and sets up a call.</span></li>
     </ol>
-    <p class="fine" data-i18n="fine">Your materials are stored privately and seen only by our partners. We never share them with investors without asking you first.</p>
+    <p class="fine" data-i18n="fine">Files are stored privately and seen only by our partners. We use AI to pre-fill the form from your materials. We never share anything with investors without asking you first.</p>
   </section>
 
   <section id="formWrap">
     <form id="f" novalidate>
       <div class="hp" aria-hidden="true"><label>Leave empty <input name="website2" tabindex="-1" autocomplete="off"></label></div>
 
-      <fieldset>
-        <legend><span class="k">01</span><span data-i18n="secCompany">Company</span></legend>
+      <!-- 01 Materials: first thing on the page -->
+      <div class="drop" id="drop">
+        <span class="big"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg></span>
+        <strong id="dropT" data-i18n="dropT">Drop your deck here</strong>
+        <span class="hint big" data-i18n="dropH">Plus anything else: BP, financials, NDA, technical docs. PDF, PowerPoint, Keynote, Word, Excel or images, up to 20 MB each.</span>
+        <span class="btn-browse big" data-i18n="browse">or choose files</span>
+        <span class="hint" id="dropMore" hidden data-i18n="dropMore">Drop more files or click to add</span>
+        <input type="file" id="pick" multiple aria-label="Choose files" accept=".pdf,.ppt,.pptx,.key,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.webp,.zip">
+      </div>
+      <div class="dropmsg" id="dropmsg" role="alert"></div>
+      <ul class="files" id="files"></ul>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+
+      <!-- 02 Company: auto-filled -->
+      <div class="sec">
+        <div class="sec-h"><h2><span class="k">01</span><span data-i18n="secCompany">Company</span></h2><span class="sub" data-i18n="secCompanySub">Filled in from your files where possible. Everything here is optional.</span></div>
         <div class="grid">
-          <label class="fld"><span><span data-i18n="company">Company name</span> *</span><input name="company" required autocomplete="organization"><span class="msg"></span></label>
-          <label class="fld"><span><span data-i18n="website">Website</span> <span class="opt" data-i18n="optional">(optional)</span></span><input name="website" inputmode="url" placeholder="https://"></label>
-          <label class="fld wide"><span><span data-i18n="oneLiner">What does the company do, in one sentence?</span> *</span><input name="oneLiner" required maxlength="240" data-i18n-ph="oneLinerPh" placeholder="e.g. AI that drafts IND submissions for biotech teams"><span class="msg"></span></label>
-          <label class="fld"><span><span data-i18n="sector">Sector</span> *</span>
-            <select name="sector" required>
+          <label class="fld"><span class="lab"><span data-i18n="company">Company name</span><span class="badge">AI</span></span><input name="company" autocomplete="organization"></label>
+          <label class="fld"><span class="lab"><span data-i18n="website">Website</span><span class="badge">AI</span></span><input name="website" inputmode="url" placeholder="https://"></label>
+          <label class="fld wide"><span class="lab"><span data-i18n="oneLiner">What the company does, in one sentence</span><span class="badge">AI</span></span><input name="oneLiner" maxlength="240" data-i18n-ph="oneLinerPh" placeholder="e.g. AI that drafts IND submissions for biotech teams"></label>
+          <label class="fld"><span class="lab"><span data-i18n="sector">Sector</span><span class="badge">AI</span></span>
+            <select name="sector">
               <option value="" data-i18n="choose">Choose…</option>
               <option value="AI Infrastructure" data-i18n="secInfra">AI infrastructure</option>
               <option value="Robotics / Embodied AI" data-i18n="secRobot">Robotics / embodied AI</option>
@@ -179,244 +208,337 @@ legend .k{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weig
               <option value="AI Applications & Agents" data-i18n="secApp">AI applications & agents</option>
               <option value="US Manufacturing Reshoring" data-i18n="secMfg">US manufacturing reshoring</option>
               <option value="Other" data-i18n="secOther">Other</option>
-            </select><span class="msg"></span></label>
-          <label class="fld"><span><span data-i18n="stage">Stage</span> *</span>
-            <select name="stage" required>
+            </select></label>
+          <label class="fld"><span class="lab"><span data-i18n="stage">Stage</span><span class="badge">AI</span></span>
+            <select name="stage">
               <option value="" data-i18n="choose">Choose…</option>
               <option>Pre-seed</option><option>Seed</option><option>Pre-A</option><option>Series A</option><option>Series B+</option>
-            </select><span class="msg"></span></label>
-          <label class="fld"><span><span data-i18n="raise">Raising this round</span> <span class="opt" data-i18n="optional">(optional)</span></span><input name="raise" placeholder="$3M"></label>
-          <label class="fld"><span><span data-i18n="location">HQ location</span> <span class="opt" data-i18n="optional">(optional)</span></span><input name="location" data-i18n-ph="locationPh" placeholder="San Francisco, CA"></label>
+            </select></label>
+          <label class="fld"><span class="lab"><span data-i18n="raise">Raising this round</span><span class="badge">AI</span></span><input name="raise" placeholder="$3M"></label>
+          <label class="fld"><span class="lab"><span data-i18n="location">HQ location</span><span class="badge">AI</span></span><input name="location" data-i18n-ph="locationPh" placeholder="San Francisco, CA"></label>
         </div>
-      </fieldset>
+      </div>
 
-      <fieldset>
-        <legend><span class="k">02</span><span data-i18n="secContact">Your contact</span></legend>
+      <!-- 03 Contact: only the name is required -->
+      <div class="sec">
+        <div class="sec-h"><h2><span class="k">02</span><span data-i18n="secContact">Your contact</span></h2></div>
         <div class="grid">
-          <label class="fld"><span><span data-i18n="name">Your name</span> *</span><input name="name" required autocomplete="name"><span class="msg"></span></label>
-          <label class="fld"><span><span data-i18n="role">Title</span> <span class="opt" data-i18n="optional">(optional)</span></span><input name="role" autocomplete="organization-title" placeholder="CEO & Co-founder"></label>
-          <label class="fld"><span><span data-i18n="email">Email</span> *</span><input name="email" type="email" required autocomplete="email"><span class="msg"></span></label>
-          <label class="fld"><span><span data-i18n="im">WeChat / WhatsApp / phone</span> <span class="opt" data-i18n="optional">(optional)</span></span><input name="im"></label>
-          <label class="fld wide"><span><span data-i18n="referrer">Who introduced you to us?</span> <span class="opt" data-i18n="optional">(optional)</span></span><input name="referrer"></label>
+          <label class="fld"><span class="lab"><span data-i18n="name">Your name</span><span class="req">*</span><span class="badge">AI</span></span><input name="name" autocomplete="name" required><span class="msg"></span></label>
+          <label class="fld"><span class="lab"><span data-i18n="role">Title</span><span class="badge">AI</span></span><input name="role" autocomplete="organization-title" placeholder="CEO & Co-founder"></label>
+          <label class="fld"><span class="lab"><span data-i18n="email">Email</span><span class="badge">AI</span></span><input name="email" type="email" autocomplete="email"><span class="msg"></span></label>
+          <label class="fld"><span class="lab"><span data-i18n="im">WeChat / WhatsApp / phone</span></span><input name="im"></label>
+          <label class="fld wide"><span class="lab"><span data-i18n="referrer">Who introduced you to us?</span></span><input name="referrer"></label>
+          <label class="fld wide"><span class="lab"><span data-i18n="notes">Anything else we should know?</span></span><textarea name="notes" data-i18n-ph="notesPh" placeholder="Key milestones, timeline for the round, what kind of help you're looking for…"></textarea></label>
         </div>
-      </fieldset>
-
-      <fieldset>
-        <legend><span class="k">03</span><span data-i18n="secFiles">Materials</span></legend>
-        <div class="drop" id="drop">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
-          <strong data-i18n="dropT">Drag files here</strong>
-          <span class="hint" data-i18n="dropH">Pitch deck, BP, financials, NDA, technical docs. PDF, PPT, Keynote, Word, Excel, images. Up to 20 MB each.</span><br>
-          <span class="btn-browse" data-i18n="browse">or choose files</span>
-          <input type="file" id="pick" multiple aria-label="Choose files" accept=".pdf,.ppt,.pptx,.key,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.webp,.zip">
-        </div>
-        <div class="dropmsg" id="dropmsg" role="alert"></div>
-        <ul class="files" id="files"></ul>
-        <label class="fld wide" style="margin-top:16px"><span><span data-i18n="notes">Anything else we should know?</span> <span class="opt" data-i18n="optional">(optional)</span></span><textarea name="notes" data-i18n-ph="notesPh" placeholder="Key milestones, timeline for the round, what kind of help you're looking for…"></textarea></label>
-      </fieldset>
-
-      <fieldset>
-        <label class="check" id="chkAuth"><input type="checkbox" name="authorized" required><span><span data-i18n="auth">I'm authorized to share these materials with Deep Horizon Venture. *</span></span></label>
-        <label class="check"><input type="checkbox" name="consentShare"><span><span data-i18n="share">You may introduce my company to investors in your network.</span><span class="sub" data-i18n="shareSub">We'll still check with you before sending any materials to a specific investor.</span></span></label>
+        <label class="check" style="margin-top:18px"><input type="checkbox" name="consentShare"><span><span data-i18n="share">You may introduce my company to investors in your network.</span><span class="sub" data-i18n="shareSub">We'll still check with you before sending any materials to a specific investor.</span></span></label>
         <div class="submit">
-          <span class="note" data-i18n="submitNote">You'll get a confirmation email with your reference number.</span>
-          <button class="go" id="go" type="submit" data-i18n="submit">Submit project</button>
+          <span class="note" data-i18n="submitNote">By submitting, you confirm you're allowed to share these materials with us.</span>
+          <button class="go" id="go" type="submit" data-i18n="submit">Submit</button>
         </div>
         <div class="alert" id="alert" role="alert" hidden></div>
         <div class="demo" id="demo" hidden data-i18n="demo">Preview mode: no backend is connected, so nothing is actually sent.</div>
-      </fieldset>
+      </div>
     </form>
   </section>
 </main>
 
 <script>
 /* ================= Config ================= */
-// Paste the Apps Script web-app URL here (ends in /exec). Leave empty for preview mode.
-// When this page is served by Apps Script itself, google.script.run is used and this is ignored.
+// Apps Script web-app URL (ends in /exec). Empty = preview mode. Ignored when this page is served by Apps Script itself.
 const ENDPOINT = "";
-// Optional scheduling link shown after submission (Calendly / Cal.com). Leave empty to hide.
+// Optional scheduling link shown after submission (Calendly / Cal.com).
 const BOOKING_URL = "";
-const MAX_MB = 20, MAX_FILES = 15;
+const MAX_MB = 20, MAX_FILES = 15, MAX_TEXT = 24000;
+// Text extraction libraries, loaded only when the first file is dropped
+const LIB = {
+  pdf: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+  pdfWorker: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
+  zip: "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+};
+const AUTO_FIELDS = ["company","website","oneLiner","sector","stage","raise","location","name","role","email"];
 
 /* ================= i18n ================= */
-const T = {
-  en: {},
-  zh: {
-    eyebrow:"Founder 项目提交", title:"把你的项目交给我们",
-    lede:"BP、数据室文件、需要我们审阅或签署的文件，都在这里一次提交，不用再分散在邮件和各种聊天工具里。",
-    s1:"提交", s1d:"填写公司基本信息并上传资料，文件数量不限，直接拖进来即可。",
-    s2:"审阅", s2d:"合伙人会通读全部材料，通常 3 个工作日内回复你。",
-    s3:"会面", s3d:"我们约一次通话深入交流，聊聊能怎么帮到你。",
-    fine:"你的资料私密保存，仅合伙人可见。未经你同意，我们不会把材料发给任何投资人。",
-    secCompany:"公司信息", company:"公司名称", website:"官网", optional:"（选填）",
-    oneLiner:"一句话说明公司做什么", oneLinerPh:"例：用 AI 帮生物科技团队自动起草 IND 申报材料",
-    sector:"赛道", choose:"请选择…", secInfra:"AI 基础设施", secRobot:"机器人 / 具身智能", secBio:"AI 生物医疗", secApp:"AI 应用与 Agent", secMfg:"美国制造回流", secOther:"其他",
-    stage:"轮次", raise:"本轮融资额", location:"总部所在地", locationPh:"例：旧金山 / 上海",
-    secContact:"联系人", name:"你的姓名", role:"职位", email:"邮箱", im:"微信 / WhatsApp / 电话", referrer:"谁介绍你来的？",
-    secFiles:"项目资料", dropT:"把文件拖到这里", dropH:"BP、路演 deck、财务数据、NDA、技术文档等。支持 PDF、PPT、Keynote、Word、Excel、图片，每个文件不超过 20 MB。", browse:"或点击选择文件",
-    notes:"还有什么想让我们知道的？", notesPh:"关键里程碑、本轮时间表、希望获得哪些帮助……",
-    auth:"我有权向 Deep Horizon Venture 分享这些资料。*",
-    share:"同意你们把我的公司介绍给你们网络中的投资人。", shareSub:"在把材料发给具体某位投资人之前，我们仍会先征求你的同意。",
-    submitNote:"提交后你会收到一封带编号的确认邮件。", submit:"提交项目",
-    demo:"预览模式：尚未连接后端，不会真正发送。",
-    kDeck:"BP / Deck", kFin:"财务数据", kNda:"NDA（请我方签署）", kTech:"技术 / 专利", kLegal:"法律 / 公司文件", kOther:"其他",
-    errReq:"必填", errEmail:"邮箱格式不对", errFiles:"请至少上传一个文件（如 BP 或 deck）", errAuth:"请确认你有权分享这些资料",
-    errSize:"{n} 超过 20 MB，请压缩后再上传。", errMax:"最多上传 15 个文件。", errDup:"{n} 已经添加过了。",
-    sending:"上传中… {i}/{n}", failed:"有文件上传失败，请重试。如果仍然失败，请直接发邮件给我们。",
-    doneT:"已收到，谢谢！", doneP:"我们已收到 {c} 的资料，合伙人审阅后会联系你。确认邮件已发送到 {e}。",
-    ref:"提交编号", book:"预约通话时间", again:"再提交一个项目"
-  }
+const ZH = {
+  eyebrow:"Founder 项目提交", title:"把你的项目交给我们",
+  lede:"直接拖入 BP 和其他资料，我们会从材料里读出公司信息，帮你填好表。",
+  s1:"拖入资料", s1d:"BP、路演 deck、财务数据、NDA，任何希望我们看或签的文件。",
+  s2:"核对信息", s2d:"我们会根据材料预先填好公司信息，有不对的直接改，再写上你的名字。",
+  s3:"等我们联系", s3d:"合伙人审阅全部材料，通常 3 个工作日内回复，并约一次通话。",
+  fine:"文件私密保存，仅合伙人可见。我们会用 AI 从你的材料中预填表格。未经你同意，不会把任何材料发给投资人。",
+  dropT:"把 BP 拖到这里", dropH:"其他文件也可以一起拖进来：财务数据、NDA、技术文档等。支持 PDF、PPT、Keynote、Word、Excel、图片，每个文件不超过 20 MB。", browse:"或点击选择文件", dropMore:"继续拖入，或点击添加更多文件",
+  secCompany:"公司信息", secCompanySub:"尽量从材料中自动填写，这部分全部选填。",
+  company:"公司名称", website:"官网", oneLiner:"一句话说明公司做什么", oneLinerPh:"例：用 AI 帮生物科技团队自动起草 IND 申报材料",
+  sector:"赛道", choose:"请选择…", secInfra:"AI 基础设施", secRobot:"机器人 / 具身智能", secBio:"AI 生物医疗", secApp:"AI 应用与 Agent", secMfg:"美国制造回流", secOther:"其他",
+  stage:"轮次", raise:"本轮融资额", location:"总部所在地", locationPh:"例：旧金山 / 上海",
+  secContact:"联系人", name:"你的姓名", role:"职位", email:"邮箱", im:"微信 / WhatsApp / 电话", referrer:"谁介绍你来的？",
+  notes:"还有什么想让我们知道的？", notesPh:"关键里程碑、本轮时间表、希望获得哪些帮助……",
+  share:"同意你们把我的公司介绍给你们网络中的投资人。", shareSub:"在把材料发给具体某位投资人之前，我们仍会先征求你的同意。",
+  submitNote:"提交即表示你有权向我们分享这些资料。", submit:"提交",
+  demo:"预览模式：尚未连接后端，不会真正发送。",
+  kDeck:"BP / Deck", kFin:"财务数据", kNda:"NDA（请我方签署）", kTech:"技术 / 专利", kLegal:"法律 / 公司文件", kOther:"其他",
+  errName:"请填写你的姓名", errEmail:"邮箱格式不对",
+  errSize:"{n} 超过 20 MB，请压缩后再上传。", errMax:"最多上传 15 个文件。", errDup:"{n} 已经添加过了。",
+  reading:"正在读取材料，自动填写信息…", filled:"已根据材料自动填写 {n} 项（蓝色标记），请核对。", filledNone:"没能从材料中识别出信息，请手动填写。", noText:"这些文件无法读取文字，请手动填写信息。",
+  uploading:"上传中…", waiting:"等待文件上传完成…", upFail:"上传失败", retry:"重试",
+  failed:"提交没有成功，请再试一次。如果仍然失败，请直接发邮件给我们。",
+  doneT:"已收到，谢谢！", doneP:"我们已收到你的资料，合伙人审阅后会与你联系。", doneMail:"确认邮件已发送到 {e}。",
+  ref:"提交编号", book:"预约通话时间", again:"再提交一个项目"
 };
 const EN = {
   kDeck:"Pitch deck / BP", kFin:"Financials", kNda:"NDA (for us to sign)", kTech:"Technical / IP", kLegal:"Legal / corporate", kOther:"Other",
-  errReq:"Required", errEmail:"Please check the email address", errFiles:"Please add at least one file (e.g. your deck)", errAuth:"Please confirm you're authorized to share",
+  errName:"Please add your name", errEmail:"Please check the email address",
   errSize:"{n} is over 20 MB. Please compress it and try again.", errMax:"Up to 15 files per submission.", errDup:"{n} is already added.",
-  sending:"Uploading… {i}/{n}", failed:"Some files didn't upload. Please try again, or email us directly if it keeps failing.",
-  doneT:"Received. Thank you!", doneP:"We've got the materials for {c}. A partner will review them and get back to you. A confirmation was sent to {e}.",
+  reading:"Reading your materials to fill in the details…", filled:"Filled in {n} fields from your materials (shown in blue). Please check them.", filledNone:"We couldn't pick up details from these files. Please fill in what you can.", noText:"We couldn't read text from these files. Please fill in what you can.",
+  uploading:"Uploading…", waiting:"Finishing uploads…", upFail:"Upload failed", retry:"Retry",
+  failed:"That didn't go through. Please try again, or email us directly if it keeps failing.",
+  doneT:"Received. Thank you!", doneP:"We've got your materials. A partner will review them and get back to you.", doneMail:"A confirmation was sent to {e}.",
   ref:"Reference", book:"Book a call", again:"Submit another project"
 };
-let lang = null;
-try{ lang = localStorage.getItem("dhv_lang") }catch(e){}
-if(!lang) lang = (navigator.language||"").toLowerCase().startsWith("zh") ? "zh" : "en";
-const EN_DEFAULT = {};
-document.querySelectorAll("[data-i18n]").forEach(el=>EN_DEFAULT[el.dataset.i18n]=el.textContent);
-document.querySelectorAll("[data-i18n-ph]").forEach(el=>EN_DEFAULT[el.dataset.i18nPh]=el.placeholder);
-const t = (k,vars)=>{let s=(lang==="zh"?T.zh[k]:undefined) ?? EN[k] ?? EN_DEFAULT[k] ?? k; if(vars)for(const[a,b]of Object.entries(vars))s=s.replaceAll("{"+a+"}",b); return s};
-function applyLang(){
-  document.documentElement.lang = lang==="zh"?"zh-CN":"en";
-  document.title = lang==="zh" ? "提交项目 · Deep Horizon Venture" : "Submit Your Project · Deep Horizon Venture";
-  document.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
-  document.querySelectorAll("[data-i18n-ph]").forEach(el=>el.placeholder=t(el.dataset.i18nPh));
-  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.lang===lang));
-  renderFiles();
-}
-document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem("dhv_lang",lang)}catch(e){};applyLang()});
-
-/* ================= Files ================= */
-const KINDS = ["deck","fin","nda","tech","legal","other"];
-const KLABEL = {deck:"kDeck",fin:"kFin",nda:"kNda",tech:"kTech",legal:"kLegal",other:"kOther"};
-let items = []; // {file, kind, state, pct}
 const $ = s=>document.querySelector(s);
 const esc = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const fmtSize = b=>b<1024*1024?Math.max(1,Math.round(b/1024))+" KB":(b/1024/1024).toFixed(1)+" MB";
+let lang=null;try{lang=localStorage.getItem("dhv_lang")}catch(e){}
+if(!lang)lang=(navigator.language||"").toLowerCase().startsWith("zh")?"zh":"en";
+const EN_DEFAULT={};
+document.querySelectorAll("[data-i18n]").forEach(el=>EN_DEFAULT[el.dataset.i18n]=el.textContent);
+document.querySelectorAll("[data-i18n-ph]").forEach(el=>EN_DEFAULT[el.dataset.i18nPh]=el.placeholder);
+const t=(k,vars)=>{let s=(lang==="zh"?ZH[k]:undefined)??EN[k]??EN_DEFAULT[k]??k;if(vars)for(const[a,b]of Object.entries(vars))s=s.replaceAll("{"+a+"}",b);return s};
+let statusState=null; // {key, vars, spin, ok}
+function applyLang(){
+  document.documentElement.lang=lang==="zh"?"zh-CN":"en";
+  document.title=lang==="zh"?"提交项目 · Deep Horizon Venture":"Submit Your Project · Deep Horizon Venture";
+  document.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>el.placeholder=t(el.dataset.i18nPh));
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===lang));
+  renderFiles();renderStatus();
+}
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem("dhv_lang",lang)}catch(e){};applyLang()});
+function setStatus(key,vars,opt={}){statusState=key?{key,vars,...opt}:null;renderStatus()}
+function renderStatus(){const el=$("#status");if(!el)return;const s=statusState;el.className="status"+(s?.ok?" ok":"");el.innerHTML=s?`${s.spin?'<span class="spin" aria-hidden="true"></span>':""}<span>${esc(t(s.key,s.vars))}</span>`:""}
+
+/* ================= Backend ================= */
+const viaGas=typeof google!=="undefined"&&google.script&&google.script.run;
+const demoMode=!viaGas&&!ENDPOINT;
+if(demoMode)$("#demo").hidden=false;
+function call(action,payload){
+  if(viaGas)return new Promise((res,rej)=>google.script.run.withSuccessHandler(res).withFailureHandler(rej).api(action,payload));
+  if(demoMode)return new Promise(res=>setTimeout(()=>res(action==="create"?{ok:true,id:"DHV-DEMO-"+Math.random().toString(36).slice(2,6).toUpperCase(),token:"demo"}:action==="extract"?{ok:true,fields:{},ai:false}:{ok:true}),300+Math.random()*600));
+  // text/plain avoids a CORS preflight, which Apps Script can't answer
+  return fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,...payload}),redirect:"follow"})
+    .then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.error||"Server error");return j});
+}
+let subP=null; // the submission is created on the first drop, so uploads start right away
+const ensureSub=()=>subP||(subP=call("create",{}).catch(e=>{subP=null;throw e}));
+const toB64=file=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]||"");r.onerror=()=>rej(r.error);r.readAsDataURL(file)});
+
+/* ================= Files ================= */
+const KINDS=["deck","fin","nda","tech","legal","other"];
+const KLABEL={deck:"kDeck",fin:"kFin",nda:"kNda",tech:"kTech",legal:"kLegal",other:"kOther"};
+let items=[]; // {uid, file, kind, state:"up"|"done"|"fail", pct, text}
+let uid=0, busy=false;
+const fmtSize=b=>b<1024*1024?Math.max(1,Math.round(b/1024))+" KB":(b/1024/1024).toFixed(1)+" MB";
 function guessKind(name){
   const n=name.toLowerCase();
   if(/\bnda\b|non[-_ ]?disclosure|保密/.test(n))return"nda";
   if(/financ|model|p&l|budget|cap ?table|财务|预算/.test(n)||/\.(xlsx?|csv)$/.test(n))return"fin";
   if(/deck|pitch|\bbp\b|business ?plan|路演|商业计划/.test(n)||/\.(pptx?|key)$/.test(n))return"deck";
   if(/patent|tech|white ?paper|paper|专利|技术/.test(n))return"tech";
-  if(/incorporat|bylaw|safe|term ?sheet|charter|legal|协议|章程/.test(n))return"legal";
+  if(/incorporat|bylaw|\bsafe\b|term ?sheet|charter|legal|协议|章程/.test(n))return"legal";
   return items.some(i=>i.kind==="deck")?"other":"deck";
 }
 function addFiles(list){
-  const msgs=[];
+  const msgs=[],added=[];
   for(const f of list){
     if(items.length>=MAX_FILES){msgs.push(t("errMax"));break}
     if(f.size>MAX_MB*1024*1024){msgs.push(t("errSize",{n:f.name}));continue}
     if(items.some(i=>i.file.name===f.name&&i.file.size===f.size)){msgs.push(t("errDup",{n:f.name}));continue}
-    items.push({file:f,kind:guessKind(f.name),state:"",pct:0});
+    const it={uid:++uid,file:f,kind:guessKind(f.name),state:"up",pct:4,text:""};items.push(it);added.push(it);
   }
   $("#dropmsg").textContent=msgs.join(" ");
-  if(items.length)$("#drop").classList.remove("err");
   renderFiles();
+  if(!added.length)return;
+  added.forEach(queueUpload);
+  autofillFrom(added);
 }
 function renderFiles(){
-  if(!$("#files"))return; // form replaced by the confirmation screen
-  $("#files").innerHTML = items.map((it,i)=>{
+  if(!$("#files"))return;
+  const has=items.length>0;
+  $("#drop").classList.toggle("compact",has);$("#dropMore").hidden=!has;
+  $("#files").innerHTML=items.map(it=>{
     const ext=(it.file.name.split(".").pop()||"").slice(0,5);
-    return `<li class="file ${it.state}" data-i="${i}">
+    return `<li class="file ${it.state}" data-u="${it.uid}">
       <span class="ext">${esc(ext)}</span>
-      <span style="min-width:0"><span class="nm" title="${esc(it.file.name)}">${esc(it.file.name)}</span><span class="sz">${fmtSize(it.file.size)}</span></span>
-      <select aria-label="Document type" data-k="${i}" ${busy?"disabled":""}>${KINDS.map(k=>`<option value="${k}"${k===it.kind?" selected":""}>${esc(t(KLABEL[k]))}</option>`).join("")}</select>
-      <button type="button" class="rm" data-rm="${i}" aria-label="Remove ${esc(it.file.name)}" ${busy?"disabled":""}>×</button>
+      <span style="min-width:0"><span class="nm" title="${esc(it.file.name)}">${esc(it.file.name)}</span><span class="sz">${fmtSize(it.file.size)}${it.state==="fail"?` · ${esc(t("upFail"))} · <a href="#" data-retry="${it.uid}">${esc(t("retry"))}</a>`:""}</span></span>
+      <select aria-label="Document type" data-k="${it.uid}">${KINDS.map(k=>`<option value="${k}"${k===it.kind?" selected":""}>${esc(t(KLABEL[k]))}</option>`).join("")}</select>
+      <button type="button" class="rm" data-rm="${it.uid}" aria-label="Remove ${esc(it.file.name)}" ${busy?"disabled":""}>×</button>
       <span class="bar"><i style="width:${it.pct}%"></i></span>
     </li>`}).join("");
 }
-$("#files").addEventListener("change",e=>{const k=e.target.dataset.k;if(k!=null)items[+k].kind=e.target.value});
-$("#files").addEventListener("click",e=>{const r=e.target.dataset.rm;if(r!=null&&!busy){items.splice(+r,1);renderFiles()}});
+const byUid=u=>items.find(i=>i.uid===+u);
+$("#files").addEventListener("change",e=>{const it=byUid(e.target.dataset.k);if(it)it.kind=e.target.value});
+$("#files").addEventListener("click",e=>{
+  const r=e.target.dataset.rm, rt=e.target.dataset.retry;
+  if(rt){e.preventDefault();const it=byUid(rt);if(it){it.state="up";it.pct=4;renderFiles();queueUpload(it)}}
+  if(r&&!busy){const it=byUid(r);items=items.filter(i=>i!==it);renderFiles();
+    if(it&&it.state==="done")ensureSub().then(s=>call("remove",{id:s.id,token:s.token,name:it.file.name})).catch(()=>{});}
+});
 const drop=$("#drop");
 ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over")}));
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over")}));
 drop.addEventListener("drop",e=>{if(!busy)addFiles(e.dataTransfer.files)});
 $("#pick").addEventListener("change",e=>{addFiles(e.target.files);e.target.value=""});
-// Allow dropping anywhere on the page without the browser opening the file
 window.addEventListener("dragover",e=>e.preventDefault());
 window.addEventListener("drop",e=>{e.preventDefault();if(!busy&&!drop.contains(e.target)&&e.dataTransfer?.files?.length)addFiles(e.dataTransfer.files)});
 
-/* ================= Backend ================= */
-const viaGas = typeof google!=="undefined" && google.script && google.script.run;
-const demoMode = !viaGas && !ENDPOINT;
-if(demoMode) $("#demo").hidden=false;
-function call(action,payload){
-  if(viaGas) return new Promise((res,rej)=>google.script.run.withSuccessHandler(res).withFailureHandler(rej).api(action,payload));
-  if(demoMode) return new Promise(res=>setTimeout(()=>res({ok:true,id:"DHV-DEMO-"+Math.random().toString(36).slice(2,6).toUpperCase(),token:"demo"}),400+Math.random()*700));
-  // text/plain avoids a CORS preflight, which Apps Script can't answer
-  return fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,...payload}),redirect:"follow"})
-    .then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.error||"Server error");return j});
+/* ---- uploads: one at a time, in the background ---- */
+let upChain=Promise.resolve();
+function queueUpload(it){
+  upChain=upChain.then(async()=>{
+    if(!items.includes(it)||it.state==="done")return;
+    const tick=setInterval(()=>{it.pct=Math.min(92,it.pct+6);const b=document.querySelector(`.file[data-u="${it.uid}"] .bar i`);if(b)b.style.width=it.pct+"%"},400);
+    try{
+      const s=await ensureSub();
+      const data=await toB64(it.file);
+      await call("upload",{id:s.id,token:s.token,name:it.file.name,mime:it.file.type||"application/octet-stream",kind:it.kind,data});
+      it.state="done";it.pct=100;
+    }catch(err){console.error(err);it.state="fail"}
+    finally{clearInterval(tick);renderFiles()}
+  });
+  return upChain;
 }
-const toB64 = file=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]||"");r.onerror=()=>rej(r.error);r.readAsDataURL(file)});
+
+/* ================= Auto-fill from the materials ================= */
+const touched=new Set();
+const loaded={};
+const loadScript=src=>loaded[src]||(loaded[src]=new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=()=>{delete loaded[src];rej(new Error("load "+src))};document.head.appendChild(s)}));
+async function extractText(file){
+  const name=file.name.toLowerCase();
+  try{
+    if(name.endsWith(".pdf")){
+      await loadScript(LIB.pdf);pdfjsLib.GlobalWorkerOptions.workerSrc=LIB.pdfWorker;
+      const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+      let out="";const meta=await pdf.getMetadata().catch(()=>null);
+      if(meta?.info?.Title)out+="[Document title] "+meta.info.Title+"\n";
+      for(let p=1;p<=Math.min(pdf.numPages,30)&&out.length<MAX_TEXT;p++){
+        const c=await(await pdf.getPage(p)).getTextContent();
+        out+=`\n[Page ${p}]\n`+c.items.map(i=>i.str+(i.hasEOL?"\n":" ")).join("");
+      }
+      return out;
+    }
+    if(/\.(pptx|docx)$/.test(name)){
+      await loadScript(LIB.zip);
+      const zip=await JSZip.loadAsync(await file.arrayBuffer());
+      const isPpt=name.endsWith(".pptx");
+      const paths=Object.keys(zip.files).filter(p=>isPpt?/^ppt\/slides\/slide\d+\.xml$/.test(p):p==="word/document.xml")
+        .sort((a,b)=>(+a.match(/\d+/)?.[0]||0)-(+b.match(/\d+/)?.[0]||0));
+      let out="";
+      for(const p of paths){
+        const xml=await zip.file(p).async("string");
+        const tag=isPpt?"a:t":"w:t";
+        const paras=xml.split(isPpt?"</a:p>":"</w:p>").map(seg=>[...seg.matchAll(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`,"g"))].map(m=>m[1]).join("")).filter(Boolean);
+        out+=(isPpt?`\n[Slide ${p.match(/\d+/)[0]}]\n`:"\n")+paras.join("\n");
+        if(out.length>MAX_TEXT)break;
+      }
+      return out.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+    }
+    if(/\.(txt|md|csv)$/.test(name))return(await file.text()).slice(0,MAX_TEXT);
+  }catch(err){console.warn("extract failed",file.name,err)}
+  return "";
+}
+let afRun=0;
+async function autofillFrom(added){
+  const run=++afRun;
+  setStatus("reading",null,{spin:true});
+  await Promise.all(added.map(async it=>{it.text=await extractText(it.file)}));
+  if(run!==afRun)return; // a newer drop took over
+  const order={deck:0,tech:1,fin:2,other:3,legal:4,nda:5};
+  const docs=items.filter(i=>i.text).sort((a,b)=>order[a.kind]-order[b.kind]);
+  if(!docs.length){setStatus(items.some(i=>/\.(pdf|pptx|docx|txt|md|csv)$/i.test(i.file.name))?"noText":null);return}
+  let text="";for(const d of docs){if(text.length>=MAX_TEXT)break;text+=`\n\n===== ${d.file.name} (${d.kind}) =====\n`+d.text.slice(0,MAX_TEXT-text.length)}
+  let fields={};
+  try{const s=await ensureSub();const r=await call("extract",{id:s.id,token:s.token,lang,text});fields=r.fields||{}}catch(err){console.warn("AI extract failed",err)}
+  if(run!==afRun)return;
+  const h=heuristics(text,docs);
+  for(const k of AUTO_FIELDS)if(!fields[k]&&h[k])fields[k]=h[k];
+  const n=applyFields(fields);
+  setStatus(n?"filled":"filledNone",{n},{ok:!!n});
+}
+function heuristics(text,docs){
+  const out={};
+  const em=text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);if(em)out.email=em[0];
+  const COMMON=/(google|linkedin|twitter|x\.com|youtube|facebook|github|medium|crunchbase|apple|microsoft|amazon|arxiv|doi|wikipedia|gmail|outlook)\./i;
+  const urls=[...text.matchAll(/\b(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+\.(?:ai|com|io|co|bio|tech|health|xyz|dev|app|cn|org))\b/gi)].map(m=>m[0]).filter(u=>!COMMON.test(u)&&!/@/.test(u));
+  if(urls.length)out.website=/^https?:/i.test(urls[0])?urls[0]:"https://"+urls[0].replace(/^www\./i,"www.");
+  else if(out.email&&!/(gmail|outlook|hotmail|yahoo|qq|163|126|icloud|proton)\./i.test(out.email))out.website="https://"+out.email.split("@")[1];
+  const raise=text.match(/(?:rais(?:e|ing)|seeking|round|融资)[^$\n]{0,40}(\$\s?\d+(?:\.\d+)?\s?(?:M|MM|million|K|B)\b)/i)||text.match(/(\$\s?\d+(?:\.\d+)?\s?(?:M|MM|million))\s+(?:seed|pre-?seed|series|round)/i);
+  if(raise)out.raise=raise[1].replace(/\s+/g,"");
+  const st=text.match(/\b(pre-?seed|seed|pre-?a|series\s?a|series\s?b)\b/i);
+  if(st){const v=st[1].toLowerCase().replace(/\s/g,"");out.stage=v.startsWith("pre-seed")||v==="preseed"?"Pre-seed":v==="seed"?"Seed":v.startsWith("pre")?"Pre-A":v==="seriesa"?"Series A":"Series B+"}
+  const person=text.match(/(?:contact|ceo|founder|联系人)\s*[:：]?\s*([A-Z][a-z]+(?: [A-Z][a-z]+){1,2})(?:\s*[,，|·]\s*(CEO|CTO|COO|Founder|Co-founder|Co-Founder))?/i);
+  if(person){out.name=person[1];if(person[2])out.role=person[2]}
+  const deck=docs.find(d=>d.kind==="deck")||docs[0];
+  const title=(deck.text.match(/\[Document title\] (.+)/)||[])[1];
+  const stem=s=>s.replace(/\.[^.]+$/,"").replace(/[_-]+/g," ").replace(/\b(pitch|deck|bp|business plan|investor|presentation|teaser|final|v\d+|20\d\d|confidential|pre-?seed|seed|series [a-c]|round|路演|商业计划书?|融资)\b/gi,"").replace(/^[\s\-–—|·:]+|[\s\-–—|·:]+$/g,"").replace(/\s{2,}/g," ").trim();
+  const guess=stem(title||"")||stem(deck.file.name);
+  if(guess&&guess.length<=40)out.company=guess;
+  return out;
+}
+function applyFields(fields){
+  let n=0;
+  for(const k of AUTO_FIELDS){
+    const v=String(fields[k]??"").trim();const el=form.elements[k];
+    if(!v||!el||touched.has(k)||el.value.trim())continue;
+    if(el.tagName==="SELECT"){if(![...el.options].some(o=>o.value===v))continue}
+    el.value=v;el.closest(".fld").classList.add("auto");n++;
+  }
+  return n;
+}
 
 /* ================= Submit ================= */
-let busy=false, sub=null; // sub = {id, token} once created, so retries reuse it
 const form=$("#f");
 function setErr(name,msg){const el=form.elements[name];const fld=el?.closest(".fld");if(!fld)return;fld.classList.toggle("err",!!msg);const m=fld.querySelector(".msg");if(m)m.textContent=msg||""}
+form.addEventListener("input",e=>{const n=e.target.name;if(!n)return;touched.add(n);e.target.closest(".fld")?.classList.remove("auto");setErr(n,"")});
 function validate(){
-  let first=null;const need=["company","oneLiner","sector","stage","name","email"];
-  for(const n of need){const v=form.elements[n].value.trim();const bad=!v;setErr(n,bad?t("errReq"):"");if(bad&&!first)first=form.elements[n]}
+  let first=null;
+  if(!form.elements.name.value.trim()){setErr("name",t("errName"));first=form.elements.name}
   const em=form.elements.email.value.trim();
   if(em&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)){setErr("email",t("errEmail"));first=first||form.elements.email}
-  if(!items.length){$("#drop").classList.add("err");$("#dropmsg").textContent=t("errFiles");first=first||$("#pick")}
-  const auth=form.elements.authorized.checked;$("#chkAuth").classList.toggle("err",!auth);
-  if(!auth)first=first||form.elements.authorized;
   if(first){first.focus({preventScroll:true});first.scrollIntoView({behavior:"smooth",block:"center"})}
   return !first;
 }
-form.addEventListener("input",e=>{if(e.target.name)setErr(e.target.name,"")});
-form.elements.authorized.addEventListener("change",e=>{if(e.target.checked)$("#chkAuth").classList.remove("err")});
 form.addEventListener("submit",async e=>{
   e.preventDefault();
   if(busy)return;
   $("#alert").hidden=true;
   if(!validate())return;
   if(form.elements.website2.value){showDone({id:"DHV-0000"});return} // honeypot: pretend success
-  busy=true;form.classList.add("sending");renderFiles();
-  const go=$("#go");
+  busy=true;renderFiles();
+  const go=$("#go");go.disabled=true;
   const fd=Object.fromEntries(["company","website","oneLiner","sector","stage","raise","location","name","role","email","im","referrer","notes"].map(k=>[k,form.elements[k].value.trim()]));
   fd.consentShare=form.elements.consentShare.checked;fd.lang=lang;
+  fd.autofilled=AUTO_FIELDS.filter(k=>form.elements[k].closest(".fld").classList.contains("auto"));
   try{
-    if(!sub){
-      const r=await call("create",{submission:fd,files:items.map(i=>({name:i.file.name,size:i.file.size,kind:i.kind}))});
-      sub={id:r.id,token:r.token};
-    }
-    const todo=items.filter(i=>i.state!=="done");
-    let n=0;
-    for(const it of todo){
-      n++;go.textContent=t("sending",{i:items.length-todo.length+n,n:items.length});
-      it.state="";it.pct=8;renderFiles();
-      try{
-        const tick=setInterval(()=>{it.pct=Math.min(90,it.pct+7);const b=document.querySelector(`.file[data-i="${items.indexOf(it)}"] .bar i`);if(b)b.style.width=it.pct+"%"},400);
-        const data=await toB64(it.file);
-        await call("upload",{id:sub.id,token:sub.token,name:it.file.name,mime:it.file.type||"application/octet-stream",kind:it.kind,data});
-        clearInterval(tick);it.state="done";it.pct=100;
-      }catch(err){it.state="fail";console.error(err)}
-      renderFiles();
-    }
+    const s=await ensureSub();
+    // retry anything that failed once more, then wait for the queue to drain
+    items.filter(i=>i.state==="fail").forEach(i=>{i.state="up";i.pct=4;queueUpload(i)});
+    renderFiles();
+    if(items.some(i=>i.state==="up")){go.textContent=t("waiting");await upChain}
     if(items.some(i=>i.state==="fail"))throw new Error("upload");
-    await call("finalize",{id:sub.id,token:sub.token});
-    showDone({id:sub.id,company:fd.company,email:fd.email});
+    const kinds=Object.fromEntries(items.map(i=>[i.file.name,i.kind]));
+    const r=await call("finalize",{id:s.id,token:s.token,submission:fd,kinds});
+    showDone({id:r.id||s.id,email:fd.email});
   }catch(err){
     console.error(err);
     $("#alert").textContent=t("failed");$("#alert").hidden=false;
   }finally{
-    busy=false;if(go.isConnected){form.classList.remove("sending");go.textContent=t("submit");renderFiles()}
+    busy=false;
+    if(go.isConnected){go.disabled=false;go.textContent=t("submit");renderFiles()}
   }
 });
 function showDone(r){
-  const c=r.company||form.elements.company.value, em=r.email||form.elements.email.value;
-  $("#formWrap").innerHTML=`<div class="done" role="status">
+  $("#formWrap").innerHTML=`<div class="thanks" role="status">
     <div class="tick"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></div>
     <h2>${esc(t("doneT"))}</h2>
-    <p>${esc(t("doneP",{c,e:em}))}</p>
+    <p>${esc(t("doneP"))}${r.email?" "+esc(t("doneMail",{e:r.email})):""}</p>
     <div class="ref"><span>${esc(t("ref"))}</span><span class="mono">${esc(r.id)}</span></div><br>
     ${BOOKING_URL?`<a class="cal" href="${esc(BOOKING_URL)}" target="_blank" rel="noopener">${esc(t("book"))}</a>`:""}
     <button class="again" type="button" onclick="location.reload()">${esc(t("again"))}</button>

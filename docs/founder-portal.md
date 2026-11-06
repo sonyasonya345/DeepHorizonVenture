@@ -3,7 +3,9 @@
 ## 整体流程
 
 ```
-Founder 打开提交页 ──► 填表 + 拖入文件（BP / 财务 / NDA / 技术 …）
+Founder 打开提交页 ──► 先拖入文件（BP / 财务 / NDA / 技术 …），文件立即开始上传
+        │                     浏览器提取文字 → 自动预填公司信息（规则识别；配置 API key 后用 Claude 识别）
+        │                     Founder 核对后提交（只有联系人姓名必填）
         │
         ▼  Google Apps Script（以 Sonya 的 Google 账号运行）
   Drive: DHV Founder Intake/<日期> <公司> (<编号>)/   ← 原件 + submission.json
@@ -23,20 +25,24 @@ Founder 打开提交页 ──► 填表 + 拖入文件（BP / 财务 / NDA / �
    - 如需更改通知收件人，修改顶部的 `CONFIG.NOTIFY`。
 3. **appsscript.json**：进入「项目设置」，勾选「在编辑器中显示 appsscript.json 清单文件」，再把 `portal/apps-script/appsscript.json` 的内容粘贴进去。
 4. **Index.html**：点击「文件 +」→「HTML」，命名为 `Index`，把 `portal/index.html` 的内容整个粘贴进去。
-5. 在函数下拉框中选择 `setup`，点击「运行」，然后按提示授权。
+5. （可选）**用 Claude 自动预填**：在「项目设置」→「脚本属性」中新增一项，名称填 `ANTHROPIC_API_KEY`，值填 Anthropic Console 里生成的 API key。
+   - 不配置也能用：页面会改用规则识别，能抓到邮箱、官网、公司名、融资额、轮次和联系人，但一句话介绍、赛道、所在地需要 founder 自己填。
+   - 配置后，会把浏览器提取出的文字（最多约 2.4 万字符）发给 Claude Haiku 识别，每次提交大约花费几美分。key 只保存在 Apps Script 里，页面上看不到。
+   - 无论是否配置，提交之后 Claude 都会按 `founder-intake` 技能重新读取全部材料，所以预填只是为了方便 founder，不影响分析质量。
+6. 在函数下拉框中选择 `setup`，点击「运行」，然后按提示授权。
    - 如果出现「Google 尚未验证此应用」，点击「高级」→「前往 DHV Founder Intake」。这是你自己的脚本，可以放心授权。
    - 运行完成后，在执行日志里可以看到 Drive 文件夹和汇总表的链接。
-6. 点击「部署」→「新建部署」→ 类型选择「网页应用 (Web app)」：
+7. 点击「部署」→「新建部署」→ 类型选择「网页应用 (Web app)」：
    - 执行身份：**我**
    - 谁可以访问：**任何人**
    - 部署后会得到一个以 `/exec` 结尾的网址，**这就是给 founder 的提交链接**。
-7. 自测：用无痕窗口打开这个链接，提交一个测试项目，检查 Drive、汇总表和两封邮件是否都正常。
+8. 自测：用无痕窗口打开这个链接，提交一个测试项目，检查 Drive、汇总表和两封邮件是否都正常。
 
 ### 可选：用自己的域名
 
 Apps Script 网址比较长，页面顶部还会显示 Google 的提示条。如果想用 `submit.<你的域名>` 这类地址：
 
-1. 把 `portal/index.html` 里的 `const ENDPOINT = ""` 改成第 6 步得到的 `/exec` 网址。
+1. 把 `portal/index.html` 里的 `const ENDPOINT = ""` 改成第 7 步得到的 `/exec` 网址。
 2. 把 `portal/` 目录部署到 Netlify（拖拽上传即可），再绑定自定义域名。
 
 ### 可选：会后预约链接
@@ -54,7 +60,10 @@ Apps Script 网址比较长，页面顶部还会显示 Google 的提示条。如
 
 ## 限制与安全
 
-- 每个文件最大 20 MB，每次提交最多 15 个文件。文件逐个上传，某个文件失败时，重试只会重传失败的那一个。
+- 每个文件最大 20 MB，每次提交最多 15 个文件。文件在拖入后立刻上传，失败的文件可以单独重试，点击提交时也会自动再试一次。
+- 文件在浏览器里提取文字，支持 PDF、PPTX、DOCX、TXT/MD/CSV。Keynote、Excel、图片和扫描件只上传，不参与预填。
+- 如果 founder 拖入了文件但没有点提交，Drive 里会留下一个名称带「(in progress)」的文件夹，Claude 处理时会单独列出。
+- 只有姓名是必填项。如果 founder 没有留邮箱，就不会发确认邮件，通知邮件里也会标明。
 - 防滥用措施：
   - 隐藏的反机器人字段 (honeypot)
   - 每次提交有一次性上传令牌，6 小时内有效
