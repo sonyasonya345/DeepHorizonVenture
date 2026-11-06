@@ -82,6 +82,10 @@ button{cursor:pointer}
 .dh .ol{color:var(--muted);font-size:15px;max-width:62ch}
 .dh .tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .dh .stamp{font-size:12px;color:var(--muted)}
+.intake{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;font-size:12.5px;color:var(--muted);border:1px solid var(--line);border-left:3px solid var(--info);border-radius:var(--r);background:var(--surface);padding:8px 12px}
+.intake b{color:var(--ink);font-weight:500}
+.intake a{color:var(--info)}
+.src-portal{background:var(--info-soft);color:var(--info)}
 select.status{border:1px solid var(--line);border-radius:999px;padding:2px 8px;background:var(--surface);font-size:12.5px}
 
 .terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
@@ -326,7 +330,7 @@ const now=()=>Date.now();
 function fmtTime(t){if(!t)return"";const d=new Date(t);const p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`}
 function rel(t){if(!t)return"";const s=(now()-t)/1000;if(s<60)return"刚刚";if(s<3600)return Math.floor(s/60)+" 分钟前";if(s<86400)return Math.floor(s/3600)+" 小时前";if(s<86400*30)return Math.floor(s/86400)+" 天前";return fmtTime(t).slice(0,10)}
 function toast(m){const d=document.createElement("div");d.className="toast";d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),2600)}
-function nameOf(id){if(!id)return"未知";if(id===AGENT)return"Claude 分析助手";if(id===me.id)return(names.get(id)||"我");return names.get(id)||"成员"}
+function nameOf(id){if(!id)return"未知";if(id===AGENT)return"Claude 分析助手";if(id==="founder")return"Founder 上传";if(id===me.id)return(names.get(id)||"我");return names.get(id)||"成员"}
 function avatarHTML(id){if(id===AGENT)return `<div class="agent-av" aria-hidden="true">C</div>`;const a=avatars.get(id);return a?`<img src="${esc(a)}" alt="">`:`<div class="agent-av" style="background:var(--sunk);color:var(--muted)">·</div>`}
 async function refreshProfiles(ids){
   if(!user)return; const want=[...new Set(ids.filter(x=>x&&x!==AGENT))]; if(!want.length)return;
@@ -398,6 +402,20 @@ document.addEventListener("scroll",hideTip,true);
 function inline(s){return markTerms(s).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/【(BP自述|BP|已核实|外部已验证|推断|待核实|待问)】/g,(m,t)=>`<span class="src src-${srcCls(t)}">${t}</span>`)}
 function md(s){if(!s)return"";const L=esc(s).split("\n");let o="",ul=false;for(const l of L){const li=/^\s*(?:[-•*]|\d+[.、)])\s+(.*)/.exec(l);if(li){if(!ul){o+="<ul>";ul=true}o+="<li>"+inline(li[1])+"</li>";continue}if(ul){o+="</ul>";ul=false}if(/^#{1,4}\s/.test(l)){o+="<h4>"+inline(l.replace(/^#+\s/,""))+"</h4>";continue}if(!l.trim())continue;o+="<p>"+inline(l)+"</p>"}if(ul)o+="</ul>";return o}
 
+/* ================= Founder intake (portal submissions) ================= */
+function intakeHTML(d){
+  const i=d.intake;if(!i)return"";const c=i.contact||{};
+  const safe=u=>/^https:\/\//.test(u||"")?u:"";
+  const bits=[`<span><b>Founder 提交</b> <span class="mono">${esc(i.submissionId||"")}</span>${i.submittedAt?` · ${fmtTime(i.submittedAt).slice(0,10)}`:""}</span>`];
+  if(c.name)bits.push(`<span>联系人 <b>${esc(c.name)}</b>${c.role?`（${esc(c.role)}）`:""}</span>`);
+  if(c.email)bits.push(`<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`);
+  if(c.im)bits.push(`<span>${esc(c.im)}</span>`);
+  if(i.referrer)bits.push(`<span>介绍人 <b>${esc(i.referrer)}</b></span>`);
+  bits.push(`<span>投资人分享授权 <b>${i.consentShare?"已同意":"未同意，需先征询"}</b></span>`);
+  if(safe(i.driveFolderUrl))bits.push(`<a href="${esc(i.driveFolderUrl)}" target="_blank" rel="noopener">原始资料（Drive）↗</a>`);
+  return `<div class="intake">${bits.join("")}</div>`;
+}
+
 /* ================= Render: list ================= */
 function renderFilters(){
   const counts={all:deals.length};for(const d of deals){counts[d.status||"new"]=(counts[d.status||"new"]||0)+1}
@@ -419,7 +437,7 @@ function renderList(){
   $("#list").innerHTML=v.map(d=>{const sc=weighted(d.scores);const st=d.status||"new";return `<button class="row${sel===d.id?" on":""}" data-id="${esc(d.id)}">
     <span class="nm">${esc(d.name||"未命名项目")}</span><span class="score">${sc?sc.toFixed(1):"—"}</span>
     <span class="ol">${esc(d.oneLiner||"还没有一句话介绍")}</span>
-    <span class="meta"><span class="pill st-${st}">${STATUS[st]}</span>${d.stage?`<span class="pill tag">${esc(d.stage)}</span>`:""}${d.sector?`<span>${esc(d.sector)}</span>`:""}<span>· ${rel(d.updatedAt)} ${esc(nameOf(d.updatedBy))}</span></span>
+    <span class="meta"><span class="pill st-${st}">${STATUS[st]}</span>${d.intake?`<span class="pill src-portal">Founder 提交</span>`:""}${d.stage?`<span class="pill tag">${esc(d.stage)}</span>`:""}${d.sector?`<span>${esc(d.sector)}</span>`:""}<span>· ${rel(d.updatedAt)} ${esc(nameOf(d.updatedBy))}</span></span>
   </button>`}).join("");
 }
 
@@ -460,6 +478,7 @@ function renderMainInner(){
         ${d.website?`<a class="pill tag" href="${esc(/^https?:/.test(d.website)?d.website:"https://"+d.website)}" target="_blank" rel="noopener">官网 ↗</a>`:""}
         <span class="stamp">${esc(nameOf(d.createdBy))} 创建于 ${fmtTime(d.createdAt).slice(0,10)} · 最近更新 ${rel(d.updatedAt)}（${esc(nameOf(d.updatedBy))}）</span>
       </div>
+      ${intakeHTML(d)}
     </div>
     <dl class="terms" style="margin:0">
       ${term("本轮融资额",r.raise)}${term("投前估值 (pre-money)",r.preMoney)}${term("出让比例",r.dilution)}${term("融资工具",r.instrument)}${term("领投方",r.lead)}${term("已有投资人",r.existing)}
@@ -536,7 +555,7 @@ function filesHTML(){
       ${rows.map(f=>`<tr><td><span class="ftype">${esc(f.ext||"")}</span> <span class="fn">${esc(f.name)}</span>${f.note?`<div class="note">${esc(f.note)}</div>`:""}</td>
         <td>${esc(nameOf(f.uploadedBy))}</td><td class="mono" style="white-space:nowrap">${fmtTime(f.uploadedAt)}</td>
         <td class="mono">${f.chars?(f.chars>=1000?(f.chars/1000).toFixed(1)+"k":f.chars)+" 字":"—"}</td>
-        <td style="white-space:nowrap">${f.assetId?`<a class="btn ghost" href="/_blob/${esc(f.assetId)}" target="_blank" rel="noopener">打开</a>`:""}${f.textAssetId?`<a class="btn ghost" href="/_blob/${esc(f.textAssetId)}" target="_blank" rel="noopener">文字</a>`:""}</td></tr>`).join("")}
+        <td style="white-space:nowrap">${f.assetId?`<a class="btn ghost" href="/_blob/${esc(f.assetId)}" target="_blank" rel="noopener">打开</a>`:""}${/^https:\/\//.test(f.driveUrl||"")?`<a class="btn ghost" href="${esc(f.driveUrl)}" target="_blank" rel="noopener">Drive ↗</a>`:""}${f.textAssetId?`<a class="btn ghost" href="/_blob/${esc(f.textAssetId)}" target="_blank" rel="noopener">文字</a>`:""}</td></tr>`).join("")}
     </tbody></table></div>`:`<p class="note">还没有资料。</p>`}
   </div>`;
 }

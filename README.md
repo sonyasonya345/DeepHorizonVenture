@@ -2,6 +2,7 @@
 
 Deal Room 是基金内部的早期项目尽调与行业投研工具，包含两部分：
 - **项目 Pipeline**：拖入 BP 自动建档，按「投资要点 + 13 节」框架生成投资备忘录 (Investment Memo)，支持资料、智能问答、团队讨论和变更记录。
+- **Founder 提交页**：对外公开的上传页，founder 填表并拖入资料（BP、财务、NDA 等），自动存进 Google Drive，再由 Claude 分析后写入 Deal Room。部署说明见 `docs/founder-portal.md`。
 - **会议与行业投研**：拖入会议或峰会笔记，自动提取人物、公司和行业痛点，汇总成跨会议的行业痛点库，并能生成行业洞察。
 
 线上版本（私有 Claude Artifact）：https://claude.ai/artifact/Mfhejvv4zgczHj5yGWcBU7
@@ -11,7 +12,10 @@ Deal Room 是基金内部的早期项目尽调与行业投研工具，包含两�
 | 路径 | 内容 |
 |---|---|
 | `app/deal-room.html` | 网页本体，单文件，HTML + CSS + JS |
-| `skills/` | Claude（Cowork）技能：`deal-screener` 项目分析、`bilingual-terms` 中英术语、`bilingual-hover-glossary` 术语悬停解释 |
+| `portal/index.html` | Founder 提交页（对外），中英双语 |
+| `portal/apps-script/` | 提交页后端（Google Apps Script）：存 Drive、记汇总表、发邮件 |
+| `docs/founder-portal.md` | 提交页的部署与使用说明 |
+| `skills/` | Claude（Cowork）技能：`deal-screener` 项目分析、`founder-intake` 处理 founder 提交、`bilingual-terms` 中英术语、`bilingual-hover-glossary` 术语悬停解释 |
 | `docs/data-model.md` | 数据库结构说明 |
 
 ## 两人协作流程

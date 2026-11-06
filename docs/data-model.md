@@ -13,9 +13,14 @@
 - `memoSource`, `memoAt`
 - `createdBy`, `createdAt`, `updatedBy`, `updatedAt`
 - `sourceEvent`：`{id, name}`，仅从会议线索转入的项目有
+- `source`：`"portal"` 表示来自 Founder 提交页（其他来源不设）
+- `intake`：仅 Founder 提交的项目有，由 Claude 按 `founder-intake` 技能写入
+  `{submissionId, submittedAt, driveFolderUrl, contact:{name, role, email, im}, referrer, location, consentShare, notes}`
+  - `consentShare`：founder 是否同意我们把项目介绍给网络中的投资人。`false` 时，任何对外推荐前都必须先征询 founder。
 
 子集合：
-- `files`：`{name, ext, size, assetId, textAssetId, chars, note, uploadedBy, uploadedAt}`
+- `files`：`{name, ext, size, assetId, textAssetId, chars, note, uploadedBy, uploadedAt, driveUrl?}`
+  - Founder 提交的文件：`uploadedBy: "founder"`，`note` 为文件类型（如「NDA（请我方签署）」），`driveUrl` 指向 Drive 原件
 - `comments`：`{text, by, at, fromChat?}`
 - `history`：`{action, detail, by, at}`
 
